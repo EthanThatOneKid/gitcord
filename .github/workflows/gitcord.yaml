@@ -1,0 +1,53 @@
+name: Gitcord
+
+on:
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issues
+  issues:
+    types: [opened, reopened, closed, deleted, transferred, syncronize]
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request
+  pull_request:
+    types: [opened, reopened, closed, deleted, synchronize, ready_for_review]
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issue_comment
+  issue_comment:
+    types: [created, edited, deleted]
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_review
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  gitcord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+      
+      - name: Create Channel
+        run: go run . issues create $ISSUE_NUMBER
+        if: >-
+            contains(fromJson('["issues","pull_request"]'), github.event_name) &&
+            contains(fromJson('["opened","reopened"]'), github.event.action)
+        env:
+          GITHUB_REPO: github.repository.name
+          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_OAUTH_TOKEN }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+      
+      - name: Close Channel [unsupported]
+        if: >-
+            contains(fromJson('["issues","pull_request","issue_comment","pull_request_review"]'), github.event_name) &&
+            contains(fromJson('["opened","reopened"]'), github.event.action)
+
+  create_channel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm ci
+      - run: node scripts/create-issue-channel.js ${{ github.event.issue.number }}
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          HUB_ID: ${{ secrets.HUB_ID }}

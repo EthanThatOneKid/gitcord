@@ -1,0 +1,23 @@
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runstepsif
+
+name: 'Gitcord'
+description: 'Open the floor on Discord.'
+
+inputs:
+  # all inputs are passed via env
+
+runs:
+  using: "composite"
+  steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+      
+      - name: Gitcord
+        run: go run . ${{ github.event_name }} ${{ github.event.action }}
+        env:
+          GITHUB_REPO: github.repository.name
+          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_OAUTH_TOKEN }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+          
