@@ -7,34 +7,20 @@ import (
 	"strconv"
 	"strings"
 
-	_ "embed"
-
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/ethanthatonekid/gitcord/gitcord"
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
 
-// This file is expected to be invoked via GitHub Workflow.
-
-// Current features:
-// - https://etok.codes/acmcsuf.com/blob/main/scripts/close-issue-channel.js
-// - https://github.com/EthanThatOneKid/acmcsuf.com/blob/main/scripts/create-issue-channel.js
-// - https://github.com/EthanThatOneKid/acmcsuf.com/blob/main/scripts/create-message.js
-// - https://github.com/EthanThatOneKid/acmcsuf.com/blob/main/.github/workflows/close_issue_channel.yaml
-// - https://github.com/EthanThatOneKid/acmcsuf.com/blob/main/.github/workflows/create_issue_channel.yaml
-// - https://github.com/EthanThatOneKid/acmcsuf.com/blob/main/.github/workflows/create_message.yaml
-
-// See:
-// https://stackoverflow.com/questions/62325286/run-github-actions-when-pull-requests-have-a-specific-label#comment122159108_62331521
-
-// Features:
-// - Create new issue channel+initial message on issues:opened,reopened
-// - Close issue channel on issues:closed,deleted
-// - Create new message on issues:opened,reopened
-
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	app := NewApp()
 
 	if err := app.Run(os.Args); err != nil {
@@ -89,18 +75,155 @@ func NewApp() *App {
 				Usage: "manage issues",
 				Subcommands: []*cli.Command{
 					{
-						Name:    "opened",
-						Aliases: []string{"reopened"},
-						Usage:   "create a new issue channel",
-						Action:  app.issuesOpened,
+						Name:   "opened",
+						Usage:  "create a new issue channel",
+						Action: app.issuesOpened,
 					},
 					{
-						Name:  "closed",
-						Usage: "remove an existing template",
-						Action: func(cCtx *cli.Context) error {
-							fmt.Println("removed task template: ", cCtx.Args().First())
-							return nil
-						},
+						Name:   "reopened",
+						Usage:  "forward issues reopened event",
+						Action: app.issuesReopened,
+					},
+					{
+						Name:   "edited",
+						Usage:  "forward issues edit event",
+						Action: app.issuesEdited,
+					},
+					{
+						Name:   "closed",
+						Usage:  "forward issues closed event",
+						Action: app.issuesClosed,
+					},
+					{
+						Name:   "deleted",
+						Usage:  "forward issues deleted event",
+						Action: app.issuesDeleted,
+					},
+					{
+						Name:   "transferred",
+						Usage:  "forward issues transferred event",
+						Action: app.issuesTransferred,
+					},
+					{
+						Name:   "assigned",
+						Usage:  "forward issues assigned event",
+						Action: app.issuesAssigned,
+					},
+					{
+						Name:   "unassigned",
+						Usage:  "forward issues unassigned event",
+						Action: app.issuesUnassigned,
+					},
+					{
+						Name:   "labeled",
+						Usage:  "forward issues labeled event",
+						Action: app.issuesLabeled,
+					},
+					{
+						Name:   "unlabeled",
+						Usage:  "forward issues unlabeled event",
+						Action: app.issuesUnlabeled,
+					},
+				},
+			},
+			{
+				Name:  "pull_request",
+				Usage: "manage pull requests",
+				Subcommands: []*cli.Command{
+					{
+						Name:   "opened",
+						Usage:  "create a new pull request channel",
+						Action: app.pull_requestOpened,
+					}, {
+						Name:   "reopened",
+						Usage:  "forward pull_request reopened event",
+						Action: app.pull_requestReopened,
+					},
+					{
+						Name:   "closed",
+						Usage:  "forward pull_request closed event",
+						Action: app.pull_requestClosed,
+					},
+					{
+						Name:   "deleted",
+						Usage:  "forward pull_request deleted event",
+						Action: app.pull_requestDeleted,
+					},
+					{
+						Name:   "review_requested",
+						Usage:  "forward pull_request review_requested event",
+						Action: app.pull_requestReviewRequested,
+					},
+					{
+						Name:   "review_request_removed",
+						Usage:  "forward pull_request review_request_removed event",
+						Action: app.pull_requestReviewRequestRemoved,
+					},
+					{
+						Name:   "assigned",
+						Usage:  "forward pull_request assigned event",
+						Action: app.pull_requestAssigned,
+					},
+					{
+						Name:   "unassigned",
+						Usage:  "forward pull_request unassigned event",
+						Action: app.pull_requestUnassigned,
+					},
+					{
+						Name:   "labeled",
+						Usage:  "forward pull_request labeled event",
+						Action: app.pull_requestLabeled,
+					},
+					{
+						Name:   "unlabeled",
+						Usage:  "forward pull_request unlabeled event",
+						Action: app.pull_requestUnlabeled,
+					},
+					{
+						Name:   "converted_to_draft",
+						Usage:  "forward pull_request converted_to_draft event",
+						Action: app.pull_requestConvertedToDraft,
+					},
+					{
+						Name:   "converted_to_draft",
+						Usage:  "forward pull_request converted_to_draft event",
+						Action: app.pull_requestConvertedToDraft,
+					},
+					{
+						Name:   "ready_for_review",
+						Usage:  "forward pull_request ready_for_review event",
+						Action: app.pull_requestReadyForReview,
+					},
+					{
+						Name:   "converted_to_draft",
+						Usage:  "forward pull_request converted_to_draft event",
+						Action: app.pull_requestConvertedToDraft,
+					},
+					{
+						Name:   "auto_merge_enabled",
+						Usage:  "forward pull_request auto_merge_enabled event",
+						Action: app.pull_requestAutoMergeEnabled,
+					},
+					{
+						Name:   "auto_merge_disabled",
+						Usage:  "forward pull_request auto_merge_disabled event",
+						Action: app.pull_requestAutoMergeDisabled,
+					},
+				},
+			},
+			{
+				Name:  "issue_comment",
+				Usage: "manage issue comments",
+				Subcommands: []*cli.Command{
+					{
+						Name:   "created",
+						Usage:  "forward a comment to the issue channel",
+						Action: app.issue_commentCreated,
+					},
+					{
+						Name:   "edited",
+						Usage:  "forward a comment edit to the issue channel",
+						Action: app.issue_commentEdited,
 					},
 				},
 			},
@@ -111,23 +234,145 @@ func NewApp() *App {
 }
 
 func (app *App) issuesOpened(ctx *cli.Context) error {
-	n, err := strconv.Atoi(ctx.Args().First())
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse issue number")
 	}
-	return app.client.CreateIssueChannel(n)
+
+	return app.client.Issues.OpenChannel(issueID)
+}
+
+func (app *App) issuesReopened(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardReopened(issueID)
+}
+
+func (app *App) issuesEdited(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardEdited(issueID)
 }
 
 func (app *App) issuesClosed(ctx *cli.Context) error {
-	n, err := strconv.Atoi(ctx.Args().First())
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	commentID, err := strconv.ParseInt(ctx.Args().Get(1), 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse comment ID")
+	}
+	return app.client.Issues.ForwardClosed(issueID, commentID)
+}
+
+func (app *App) issuesDeleted(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse issue number")
 	}
-	return app.client.CloseIssueChannel(n)
+
+	return app.client.Issues.ForwardDeleted(issueID)
 }
 
-func (app *App) pullRequestReviewSubmitted(ctx *cli.Context) error {
-	prID, err := strconv.Atoi(ctx.Args().Get(1))
+func (app *App) issuesTransferred(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardTransferred(issueID)
+}
+
+func (app *App) issuesAssigned(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardAssigned(issueID)
+}
+
+func (app *App) issuesUnassigned(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardUnassigned(issueID)
+}
+
+func (app *App) issuesLabeled(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardLabeled(issueID)
+}
+
+func (app *App) issuesUnlabeled(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	return app.client.Issues.ForwardUnlabeled(issueID)
+}
+
+func (app *App) issue_commentCreated(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	commentID, err := strconv.ParseInt(ctx.Args().Get(2), 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse comment ID")
+	}
+	return app.client.Comments.ForwardCreated(issueID, commentID)
+}
+
+func (app *App) issue_commentEdited(ctx *cli.Context) error {
+	issueID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse issue number")
+	}
+
+	commentID, err := strconv.ParseInt(ctx.Args().Get(1), 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse comment ID")
+	}
+	return app.client.Comments.ForwardEdited(issueID, commentID)
+}
+
+func (app *App) pull_requestOpened(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.OpenChannel(prID)
+}
+
+func (app *App) pull_requestReopened(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardReopened(prID)
+}
+
+func (app *App) pull_requestClosed(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse PR number")
 	}
@@ -137,16 +382,131 @@ func (app *App) pullRequestReviewSubmitted(ctx *cli.Context) error {
 		return errors.Wrap(err, "failed to parse comment ID")
 	}
 
-	return app.client.SendPRReview(prID, commentID)
+	return app.client.PRs.ForwardClosed(prID, commentID)
+}
+
+func (app *App) pull_requestDeleted(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardDeleted(prID)
+}
+
+func (app *App) pull_requestAssigned(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardAssigned(prID)
+}
+
+func (app *App) pull_requestUnassigned(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardUnassigned(prID)
+}
+
+func (app *App) pull_requestLabeled(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardLabeled(prID)
+}
+
+func (app *App) pull_requestUnlabeled(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardUnlabeled(prID)
+}
+
+func (app *App) pull_requestEdited(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardEdited(prID)
+	// return errors.New("not implemented")
+}
+
+func (app *App) pull_requestReadyForReview(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardReadyForReview(prID)
+	// return errors.New("not implemented")
+}
+
+func (app *App) pull_requestReviewRequested(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardReviewRequested(prID)
+	// return errors.New("not implemented")
+}
+
+func (app *App) pull_requestReviewRequestRemoved(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardReviewRequestRemoved(prID)
+	// return errors.New("not implemented")
+}
+
+func (app *App) pull_requestConvertedToDraft(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardConvertedToDraft(prID)
+	// return errors.New("not implemented")
+}
+
+func (app *App) pull_requestAutoMergeEnabled(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardAutoMergeEnabled(prID)
+	// return errors.New("not implemented")
+}
+
+func (app *App) pull_requestAutoMergeDisabled(ctx *cli.Context) error {
+	prID, err := strconv.Atoi(ctx.Args().Get(0))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse PR number")
+	}
+
+	return app.client.PRs.ForwardAutoMergeDisabled(prID)
+	// return errors.New("not implemented")
 }
 
 func parseColors(envMap map[string]*gitcord.StatusColors) error {
 	for env, colors := range envMap {
-		if err := parseColorsEnv(env+"_SUCCESS", &colors.Success); err != nil {
+		if err := parseColorEnv(env+"_SUCCESS", &colors.Success); err != nil {
 			return err
 		}
 
-		if err := parseColorsEnv(env+"_ERROR", &colors.Error); err != nil {
+		if err := parseColorEnv(env+"_ERROR", &colors.Error); err != nil {
 			return err
 		}
 	}
@@ -154,7 +514,7 @@ func parseColors(envMap map[string]*gitcord.StatusColors) error {
 	return nil
 }
 
-func pareseColorEnv(env string, dst *discord.Color) error {
+func parseColorEnv(env string, dst *discord.Color) error {
 	val := os.Getenv(env)
 	if val == "" {
 		return nil
@@ -164,9 +524,9 @@ func pareseColorEnv(env string, dst *discord.Color) error {
 		return fmt.Errorf("$%s: invalid color must be of format #XXXXXX", env)
 	}
 
-	c, err := strconv.ParseInt(strings.TrimPrefix(val,"#"), 10, 32)
-	if err!==nil {
-		return errors.Wrapf(err ,"$%s: invalid color", env)
+	c, err := strconv.ParseInt(strings.TrimPrefix(val, "#"), 10, 32)
+	if err != nil {
+		return errors.Wrapf(err, "$%s: invalid color", env)
 	}
 
 	*dst = discord.Color(c)
