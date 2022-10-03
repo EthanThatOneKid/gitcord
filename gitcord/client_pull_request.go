@@ -16,6 +16,7 @@ type PRsClient struct {
 
 func (c *PRsClient) WithContext(ctx context.Context) *PRsClient {
 	cpy := *c
+	cpy.client = cpy.client.WithContext(ctx)
 	cpy.ctx = ctx
 	return &cpy
 }

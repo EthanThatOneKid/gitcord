@@ -37,6 +37,8 @@ func NewApp() *App {
 	app := &App{}
 
 	app.App = &cli.App{
+		Name:     "gitcord",
+		HelpName: "expand your GitHub issues into Discord channels",
 		Before: func(ctx *cli.Context) error {
 			channelID, err := discord.ParseSnowflake(os.Getenv("DISCORD_CHANNEL_ID"))
 			if err != nil {
@@ -134,7 +136,8 @@ func NewApp() *App {
 						Name:   "opened",
 						Usage:  "create a new pull request channel",
 						Action: app.pull_requestOpened,
-					}, {
+					},
+					{
 						Name:   "reopened",
 						Usage:  "forward pull_request reopened event",
 						Action: app.pull_requestReopened,

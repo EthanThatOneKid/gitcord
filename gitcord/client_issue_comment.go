@@ -13,6 +13,7 @@ type IssueCommentClient struct {
 
 func (c *IssueCommentClient) WithContext(ctx context.Context) *IssueCommentClient {
 	cpy := *c
+	cpy.client = cpy.client.WithContext(ctx)
 	cpy.ctx = ctx
 	return &cpy
 }
@@ -30,12 +31,7 @@ func (c *IssueCommentClient) ForwardCreated(issueID int, commentID int64) error 
 		return errors.Wrap(err, "failed to get issue")
 	}
 
-	chs, err := c.activeThreads()
-	if err != nil {
-		return errors.Wrap(err, "failed to get active threads")
-	}
-
-	ch := findChannelByID(chs, issueID)
+	ch := c.discord.FindChannelByIssue(issueID)
 	if ch == nil {
 		c.logln("skipping unknown issue with ID", issueID)
 		return nil
@@ -62,18 +58,13 @@ func (c *IssueCommentClient) ForwardEdited(issueID int, commentID int64) error {
 		return errors.Wrap(err, "failed to get issue")
 	}
 
-	chs, err := c.activeThreads()
-	if err != nil {
-		return errors.Wrap(err, "failed to get active threads")
-	}
-
-	ch := findChannelByID(chs, issueID)
+	ch := c.discord.FindChannelByIssue(issueID)
 	if ch == nil {
 		c.logln("skipping unknown issue with ID", issueID)
 		return nil
 	}
 
-	msg := c.findMsgByID(ch, commentID, false)
+	msg := c.discord.FindMsgByID(ch, commentID)
 	if msg == nil {
 		c.logln("skipping unknown comment with ID", commentID)
 		return nil

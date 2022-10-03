@@ -3,7 +3,7 @@ package gitcord
 import (
 	"context"
 
-	"github.com/diamondburned/arikawa/v3/api"
+	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
 	"github.com/google/go-github/v47/github"
 	"golang.org/x/oauth2"
 )
@@ -11,7 +11,7 @@ import (
 // client for the GitHub Discord bot
 type client struct {
 	github  *github.Client
-	discord *api.Client
+	discord *discordclient.Client
 	config  Config
 }
 
@@ -32,15 +32,28 @@ func NewClient(cfg Config) *Client {
 
 func newClient(cfg Config) *client {
 	return &client{
-		github:  github.NewClient(oauth2.NewClient(context.Background(), cfg.GitHubOAuth)),
-		discord: api.NewClient(cfg.DiscordToken),
-		config:  cfg,
+		github: github.NewClient(oauth2.NewClient(context.Background(), cfg.GitHubOAuth)),
+		discord: discordclient.New(discordclient.Config{
+			DiscordToken:     cfg.DiscordToken,
+			DiscordGuildID:   cfg.DiscordGuildID,
+			DiscordChannelID: cfg.DiscordChannelID,
+			Logger:           cfg.Logger,
+		}),
+		config: cfg,
 	}
 }
 
 func (c *client) logln(v ...any) {
 	if c.config.Logger != nil {
 		c.config.Logger.Println(v...)
+	}
+}
+
+func (c *client) WithContext(ctx context.Context) *client {
+	return &client{
+		github:  c.github,
+		discord: c.discord.WithContext(ctx),
+		config:  c.config,
 	}
 }
 

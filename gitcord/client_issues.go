@@ -16,6 +16,7 @@ type IssuesClient struct {
 
 func (c *IssuesClient) WithContext(ctx context.Context) *IssuesClient {
 	cpy := *c
+	cpy.client = cpy.client.WithContext(ctx)
 	cpy.ctx = ctx
 	return &cpy
 }

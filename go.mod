@@ -19,6 +19,7 @@ require (
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/joho/godotenv v1.4.0
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pythonian23/SMoRe v0.0.0-20220517034719-763500ba5b4e
 	github.com/urfave/cli/v2 v2.16.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
