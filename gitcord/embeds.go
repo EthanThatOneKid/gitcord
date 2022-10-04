@@ -10,6 +10,8 @@ import (
 	smore "github.com/pythonian23/SMoRe"
 )
 
+// IssuesEvent embeds
+
 func (c Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	fields := &[]discord.EmbedField{
 		{
@@ -43,10 +45,10 @@ func (c Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 		})
 	}
 
-	if *issue.Locked {
+	if issue.GetLocked() {
 		*fields = append(*fields, discord.EmbedField{
 			Name:   "Locked",
-			Value:  "Yes",
+			Value:  "🔒",
 			Inline: true,
 		})
 	}
@@ -63,6 +65,71 @@ func (c Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 		Fields:      *fields,
 	}
 }
+
+func (c Config) makeIssueClosedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s closed this as completed", ev.GetSender().GetLogin()),
+		Color: discord.Color(c.Colors.IssueClosed.Success),
+	}
+}
+
+func (c Config) makeIssueReopenedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s reopened this", ev.GetSender().GetLogin()),
+		Color: discord.Color(c.Colors.IssueReopened.Success),
+	}
+}
+
+func (c Config) makeIssueLabeledEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s added label %s", ev.GetSender().GetLogin(), ev.GetLabel().GetName()),
+		Color: discord.Color(c.Colors.IssueLabeled.Success),
+	}
+}
+
+func (c Config) makeIssueUnlabeledEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s removed label %s", ev.GetSender().GetLogin(), ev.GetLabel().GetName()),
+		Color: discord.Color(c.Colors.IssueUnlabeled.Success),
+	}
+}
+
+func (c Config) makeIssueAssignedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s assigned %s", ev.GetSender().GetLogin(), ev.GetAssignee().GetLogin()),
+		Color: discord.Color(c.Colors.IssueAssigned.Success),
+	}
+}
+
+func (c Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s unassigned %s", ev.GetSender().GetLogin(), ev.GetAssignee().GetLogin()),
+		Color: discord.Color(c.Colors.IssueUnassigned.Success),
+	}
+}
+
+func (c Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s added milestone %s", ev.GetSender().GetLogin(), ev.GetMilestone().GetTitle()),
+		Color: discord.Color(c.Colors.IssueMilestoned.Success),
+	}
+}
+
+func (c Config) makeIssueDemilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s removed milestone %s", ev.GetSender().GetLogin(), ev.GetMilestone().GetTitle()),
+		Color: discord.Color(c.Colors.IssueDemilestoned.Success),
+	}
+}
+
+func (c Config) makeIssueDeletedEmbed(ev *github.IssuesEvent) discord.Embed {
+	return discord.Embed{
+		Title: fmt.Sprintf("%s deleted this", ev.GetSender().GetLogin()),
+		Color: discord.Color(c.Colors.IssueDeleted.Success),
+	}
+}
+
+// IssueCommentEvent embeds
 
 func (c Config) makeIssueCommentEmbed(issue *github.Issue, comment *github.IssueComment) discord.Embed {
 	var fields *[]discord.EmbedField
@@ -88,6 +155,8 @@ func (c Config) makeIssueCommentEmbed(issue *github.Issue, comment *github.Issue
 		Footer: &discord.EmbedFooter{Text: "0x" + strconv.FormatInt(comment.GetID(), 16)},
 	}
 }
+
+// PullRequestEvent embeds
 
 func (c Config) makePREmbed(pr *github.PullRequest) discord.Embed {
 	var fields *[]discord.EmbedField
@@ -146,6 +215,8 @@ func (c Config) makePREmbed(pr *github.PullRequest) discord.Embed {
 	}
 }
 
+// PullRequestCommentEvent embeds
+
 func (c Config) makePRCommentEmbed(pr *github.PullRequest, comment *github.PullRequestComment) discord.Embed {
 	var fields *[]discord.EmbedField
 
@@ -171,6 +242,8 @@ func (c Config) makePRCommentEmbed(pr *github.PullRequest, comment *github.PullR
 	}
 }
 
+// PullRequestReviewEvent embeds
+
 func (c Config) makePRReviewEmbed(pr *github.PullRequest, review *github.PullRequestReview) discord.Embed {
 	return discord.Embed{
 		Title:       pr.GetTitle(),
@@ -178,6 +251,8 @@ func (c Config) makePRReviewEmbed(pr *github.PullRequest, review *github.PullReq
 		URL:         review.GetHTMLURL(),
 	}
 }
+
+// PullRequestReviewCommentEvent embeds
 
 func (c Config) makePRReviewCommentEmbed(pr *github.PullRequest, comment *github.PullRequestComment) discord.Embed {
 	return discord.Embed{
@@ -187,12 +262,11 @@ func (c Config) makePRReviewCommentEmbed(pr *github.PullRequest, comment *github
 	}
 }
 
-func (c Config) makeIssueClosedEmbed(ev *github.IssuesEvent) discord.Embed {
+// PullRequestReviewThreadEvent embeds
+
+func (c Config) makePRReviewThreadEmbed(pr *github.PullRequest) discord.Embed {
 	return discord.Embed{
-		Title: fmt.Sprintf("%s closed this as completed", ev.GetSender().GetLogin()),
-		URL:   ev.GetIssue().GetHTMLURL(),
-		Color: discord.Color(c.Colors.IssueClosed.Success),
-	}
+		
 }
 
 func convertSlicePtr[T any](s []*T) []T {

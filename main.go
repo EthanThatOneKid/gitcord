@@ -87,7 +87,7 @@ func NewApp() *App {
 			return nil
 		},
 		Action: func(ctx *cli.Context) error {
-			return app.client.Run()
+			return app.client.DoEvent()
 		},
 	}
 

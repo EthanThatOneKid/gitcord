@@ -89,17 +89,8 @@ func findChannelByIssue(channels []discord.Channel, targetID int) *discord.Chann
 	})
 }
 
-func findMsg(msgs []discord.Message, f func(msg *discord.Message) bool) *discord.Message {
-	for i := range msgs {
-		if f(&msgs[i]) {
-			return &msgs[i]
-		}
-	}
-	return nil
-}
-
-func findMsgByComment(msgs []discord.Message, commentID int64) *discord.Message {
-	return findMsg(msgs, func(msg *discord.Message) bool {
+func (c Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.Message {
+	return c.findMsg(ch, false, func(msg *discord.Message) bool {
 		var id int64
 
 		if len(msg.Embeds) != 1 {
@@ -115,15 +106,24 @@ func findMsgByComment(msgs []discord.Message, commentID int64) *discord.Message 
 	})
 }
 
-func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.Message {
-	return c.findMsgByComment(ch, commentID, false)
+func (c Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Message {
+	return c.findMsg(ch, true, func(msg *discord.Message) bool {
+		var id int
+
+		if len(msg.Embeds) != 1 {
+			return false
+		}
+
+		_, err := fmt.Sscanf(msg.Embeds[0].Title, "#%d", &id)
+		if err != nil {
+			return false
+		}
+
+		return err == nil && id == issueID
+	})
 }
 
-func (c *Client) FindMsgByCommentFromTop(ch *discord.Channel, commentID int64) *discord.Message {
-	return c.findMsgByComment(ch, commentID, true)
-}
-
-func (c *Client) findMsgByComment(ch *discord.Channel, commentID int64, fromTop bool) *discord.Message {
+func (c *Client) findMsg(ch *discord.Channel, fromTop bool, f func(msg *discord.Message) bool) *discord.Message {
 	var lastID discord.MessageID
 	msgs := make([]discord.Message, 0, 100)
 
@@ -141,9 +141,10 @@ func (c *Client) findMsgByComment(ch *discord.Channel, commentID int64, fromTop 
 			return nil
 		}
 
-		msg := findMsgByComment(msgs, commentID)
-		if msg != nil {
-			return msg
+		for i := range msgs {
+			if f(&msgs[i]) {
+				return &msgs[i]
+			}
 		}
 
 		switch {

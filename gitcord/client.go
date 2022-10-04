@@ -70,7 +70,7 @@ func (c *Client) WithContext(ctx context.Context) *Client {
 	}
 }
 
-func (c Client) Run() error {
+func (c Client) DoEvent() error {
 	ev, err := c.github.FindEvent(c.config.EventID)
 	if err != nil {
 		return err
@@ -106,63 +106,63 @@ func (c *Client) handleIssuesEvent(ev *github.Event, payload *github.IssuesEvent
 		return c.Issues.OpenThread(payload)
 
 	case "closed":
-		err := c.Issues.EmbedClosed(payload)
+		err := c.Issues.EmbedClosedMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "reopened":
-		err := c.Issues.EmbedReopened(payload)
+		err := c.Issues.EmbedReopenedMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "edited":
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "assigned":
-		err := c.Issues.EmbedAssigned(payload)
+		err := c.Issues.EmbedAssignedMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "unassigned":
-		err := c.Issues.EmbedUnassigned(payload)
+		err := c.Issues.EmbedUnassignedMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "labeled":
-		err := c.Issues.EmbedLabeled(payload)
+		err := c.Issues.EmbedLabeledMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "unlabeled":
-		err := c.Issues.EmbedUnlabeled(payload)
+		err := c.Issues.EmbedUnlabeledMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "locked":
-		err := c.Issues.EmbedLocked(payload)
+		err := c.Issues.EmbedLockedMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "unlocked":
-		err := c.Issues.EmbedUnlocked(payload)
+		err := c.Issues.EmbedUnlockedMsg(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "transferred":
 		return c.Issues.EmbedTransferred(payload)
@@ -175,14 +175,14 @@ func (c *Client) handleIssuesEvent(ev *github.Event, payload *github.IssuesEvent
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	case "demilestoned":
 		err := c.Issues.EmbedDemilestoned(payload)
 		if err != nil {
 			return err
 		}
-		return c.Issues.Edit(payload)
+		return c.Issues.EditInitialMsg(payload)
 
 	default:
 		return nil
