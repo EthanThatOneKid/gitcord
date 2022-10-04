@@ -2,7 +2,6 @@ package gitcord
 
 import (
 	"log"
-	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"golang.org/x/oauth2"
@@ -22,18 +21,14 @@ type Config struct {
 	DiscordGuildID   discord.GuildID
 	Colors           ColorSchemeConfig
 
+	// ForceCreateThread will force create threads for existing threads.
+	ForceCreateThread bool
+
+	// EventID is the ID of the event that is being processed.
+	EventID int64
+
 	// Logger is the logger to use. If nil, the default logger will be used.
 	Logger *log.Logger
-}
-
-// SplitGitHubRepo splits the GitHub repository path into its owner and name.
-func (c Config) SplitGitHubRepo() (owner, repo string) {
-	var ok bool
-	owner, repo, ok = strings.Cut(c.GitHubRepo, "/")
-	if !ok {
-		panic("invalid GitHubRepo, must be in owner/repo form")
-	}
-	return
 }
 
 type StatusColors struct {
@@ -49,8 +44,10 @@ var DefaultStatusColors = StatusColors{
 type ColorSchemeConfig struct {
 	IssueOpened    StatusColors
 	IssueCommented StatusColors
+	IssueClosed    StatusColors
 	PROpened       StatusColors
 	PRCommented    StatusColors
+	PRClosed       StatusColors
 }
 
 var DefaultColorScheme = ColorSchemeConfig{

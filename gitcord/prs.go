@@ -6,6 +6,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/google/go-github/v47/github"
 	"github.com/pkg/errors"
 )
 
@@ -21,24 +22,41 @@ func (c *PRsClient) WithContext(ctx context.Context) *PRsClient {
 	return &cpy
 }
 
-func (c *PRsClient) OpenChannel(prID int) error {
-	owner, repo := c.config.SplitGitHubRepo()
+func (c *PRsClient) OpenThread(ev *github.PullRequestEvent) error {
+	pr := ev.GetPullRequest()
 
-	pr, _, err := c.github.PullRequests.Get(c.ctx, owner, repo, prID)
-	if err != nil {
-		return errors.Wrap(err, "failed to get pull request")
+	if pr.GetState() != "open" {
+		if !c.config.ForceCreateThread {
+			return fmt.Errorf("pull request %d is not open", pr.GetNumber())
+		}
+		c.logln("ignoring closed pull request", pr.GetNumber())
+	}
+
+	ch := c.discord.FindThreadByIssue(pr.GetNumber())
+	if ch != nil {
+		if ch.Type != discord.GuildPublicThread {
+			if !c.config.ForceCreateThread {
+				return fmt.Errorf("channel %d is not a public thread", ch.ID)
+			}
+			c.logln("ignoring channel %d is not a public thread", ch.ID)
+		}
+
+		if !c.config.ForceCreateThread {
+			return fmt.Errorf("pull request %d already has a thread %d", pr.GetNumber(), ch.ID)
+		}
+		c.logln("ignoring existing thread %d", ch.ID)
 	}
 
 	ch, err := c.discord.StartThreadWithoutMessage(c.config.DiscordChannelID, api.StartThreadData{
 		Name:                fmt.Sprintf("#%d: %s", pr.GetNumber(), pr.GetTitle()),
 		Type:                discord.GuildPublicThread,
-		AutoArchiveDuration: discord.OneDayArchive,
+		AutoArchiveDuration: discord.SevenDaysArchive,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to create channel")
+		return errors.Wrap(err, "failed to open thread")
 	}
 
-	_, err = c.discord.SendEmbeds(ch.ID, embedOpeningPRChannelMsg(c.config, pr))
+	_, err = c.discord.SendEmbeds(ch.ID, *c.config.makePREmbed(pr))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}

@@ -16,10 +16,11 @@ type Client struct {
 }
 
 type Config struct {
-	DiscordToken     string
-	DiscordGuildID   discord.GuildID
-	DiscordChannelID discord.ChannelID
-	Logger           *log.Logger
+	DiscordToken      string
+	DiscordGuildID    discord.GuildID
+	DiscordChannelID  discord.ChannelID
+	ForceCreateThread bool
+	Logger            *log.Logger
 }
 
 func New(cfg Config) *Client {
@@ -44,7 +45,7 @@ func (c *Client) WithContext(ctx context.Context) *Client {
 	}
 }
 
-func (c *Client) ActiveThreads() ([]discord.Channel, error) {
+func (c *Client) activeThreads() ([]discord.Channel, error) {
 	active, err := c.Client.ActiveThreads(c.config.DiscordGuildID)
 	if err != nil {
 		return nil, err
@@ -60,15 +61,15 @@ func (c *Client) ActiveThreads() ([]discord.Channel, error) {
 	return relevantThreads, nil
 }
 
-func (c *Client) FindChannelByIssue(id int) *discord.Channel {
-	chs, err := c.ActiveThreads()
+func (c *Client) FindThreadByIssue(id int) *discord.Channel {
+	chs, err := c.activeThreads()
 
 	if err != nil {
 		c.logln("failed to load channels:", err)
 		return nil
 	}
 
-	return findChannelByID(chs, id)
+	return findChannelByIssue(chs, id)
 }
 
 func findChannel(channels []discord.Channel, f func(ch *discord.Channel) bool) *discord.Channel {
@@ -80,7 +81,7 @@ func findChannel(channels []discord.Channel, f func(ch *discord.Channel) bool) *
 	return nil
 }
 
-func findChannelByID(channels []discord.Channel, targetID int) *discord.Channel {
+func findChannelByIssue(channels []discord.Channel, targetID int) *discord.Channel {
 	return findChannel(channels, func(ch *discord.Channel) bool {
 		var n int
 		_, err := fmt.Scanf("#%d", &n)
@@ -97,7 +98,7 @@ func findMsg(msgs []discord.Message, f func(msg *discord.Message) bool) *discord
 	return nil
 }
 
-func findMsgByID(msgs []discord.Message, targetID int64) *discord.Message {
+func findMsgByComment(msgs []discord.Message, commentID int64) *discord.Message {
 	return findMsg(msgs, func(msg *discord.Message) bool {
 		var id int64
 
@@ -110,19 +111,19 @@ func findMsgByID(msgs []discord.Message, targetID int64) *discord.Message {
 			return false
 		}
 
-		return err == nil && id == targetID
+		return err == nil && id == commentID
 	})
 }
 
-func (c *Client) FindMsgByID(ch *discord.Channel, targetID int64) *discord.Message {
-	return c.findMsgByID(ch, targetID, false)
+func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.Message {
+	return c.findMsgByComment(ch, commentID, false)
 }
 
-func (c *Client) FindMsgByIDFromTop(ch *discord.Channel, targetID int64) *discord.Message {
-	return c.findMsgByID(ch, targetID, true)
+func (c *Client) FindMsgByCommentFromTop(ch *discord.Channel, commentID int64) *discord.Message {
+	return c.findMsgByComment(ch, commentID, true)
 }
 
-func (c *Client) findMsgByID(ch *discord.Channel, targetID int64, fromTop bool) *discord.Message {
+func (c *Client) findMsgByComment(ch *discord.Channel, commentID int64, fromTop bool) *discord.Message {
 	var lastID discord.MessageID
 	msgs := make([]discord.Message, 0, 100)
 
@@ -140,7 +141,7 @@ func (c *Client) findMsgByID(ch *discord.Channel, targetID int64, fromTop bool) 
 			return nil
 		}
 
-		msg := findMsgByID(msgs, targetID)
+		msg := findMsgByComment(msgs, commentID)
 		if msg != nil {
 			return msg
 		}

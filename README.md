@@ -22,7 +22,7 @@ Collect the information listed below in any order.
 cp .env.example .env # populate .env
 source .env
 
-go run . issues opened 1
+go run . 0
 ```
 
 ### Testing 👷‍♂️
