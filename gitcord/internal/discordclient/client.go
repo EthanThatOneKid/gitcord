@@ -89,7 +89,7 @@ func findChannelByIssue(channels []discord.Channel, targetID int) *discord.Chann
 	})
 }
 
-func (c Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.Message {
+func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.Message {
 	return c.findMsg(ch, false, func(msg *discord.Message) bool {
 		var id int64
 
@@ -106,7 +106,7 @@ func (c Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.
 	})
 }
 
-func (c Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Message {
+func (c *Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Message {
 	return c.findMsg(ch, true, func(msg *discord.Message) bool {
 		var id int
 

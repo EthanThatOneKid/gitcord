@@ -30,7 +30,7 @@ type Config struct {
 }
 
 // SplitGitHubRepo splits the GitHub repository path into its owner and name.
-func (c Config) SplitGitHubRepo() (owner, repo string) {
+func (c *Config) SplitGitHubRepo() (owner, repo string) {
 	var ok bool
 	owner, repo, ok = strings.Cut(c.GitHubRepo, "/")
 	if !ok {
@@ -54,7 +54,7 @@ func (c *Client) logln(v ...any) {
 	}
 }
 
-func (c Client) FindEvent(eventID int64) (*github.Event, error) {
+func (c *Client) FindEvent(eventID int64) (*github.Event, error) {
 	owner, repo := c.config.SplitGitHubRepo()
 
 	evs, resp, err := c.Activity.ListRepositoryEvents(c.ctx, owner, repo, nil)

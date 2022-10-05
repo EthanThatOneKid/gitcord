@@ -70,7 +70,7 @@ func (c *client) WithContext(ctx context.Context) *client {
 // DoEvent handles a GitHub event
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
-func (c Client) DoEvent() error {
+func (c *Client) DoEvent() error {
 	ev, err := c.client.github.FindEvent(c.client.config.EventID)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (c Client) DoEvent() error {
 // handleIssuesEvent handles an IssuesEvent
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#issuesevent
-func (c Client) handleIssuesEvent(ev *github.IssuesEvent) error {
+func (c *Client) handleIssuesEvent(ev *github.IssuesEvent) error {
 	switch *ev.Action {
 	case "opened":
 		return c.Issues.OpenAndEmbedInitialMsg(ev)
@@ -208,7 +208,7 @@ func (c *Client) handlePREvent(ev *github.PullRequestEvent) error {
 // handleIssueCommentEvent handles an IssueCommentEvent
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#issuecommentevent
-func (c Client) handleIssueCommentEvent(ev *github.IssueCommentEvent) error {
+func (c *Client) handleIssueCommentEvent(ev *github.IssueCommentEvent) error {
 	switch *ev.Action {
 	case "created":
 		return c.Comments.EmbedIssueCommentMsg(ev)

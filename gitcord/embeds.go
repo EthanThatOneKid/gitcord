@@ -12,7 +12,7 @@ import (
 
 /// START IssuesEvent Discord embeds
 
-func (c Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
+func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	fields := &[]discord.EmbedField{
 		{
 			Name:   "Status",
@@ -66,7 +66,7 @@ func (c Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueClosedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueClosedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d closed as completed", ev.GetIssue().GetNumber()),
 		Color: discord.Color(c.Colors.IssueClosed.Success),
@@ -77,7 +77,7 @@ func (c Config) makeIssueClosedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueReopenedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueReopenedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d reopened", ev.GetIssue().GetNumber()),
 		Color: discord.Color(c.Colors.IssueReopened.Success),
@@ -88,7 +88,7 @@ func (c Config) makeIssueReopenedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueLabeledEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueLabeledEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		// TODO: Add label color
 		Title: fmt.Sprintf("Issue #%d: added %s label", ev.GetIssue().GetNumber(), ev.GetLabel().GetName()),
@@ -100,7 +100,7 @@ func (c Config) makeIssueLabeledEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueUnlabeledEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueUnlabeledEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		// TODO: Add label color
 		Title: fmt.Sprintf("Issue #%d: removed %s label", ev.GetIssue().GetNumber(), ev.GetLabel().GetName()),
@@ -112,7 +112,7 @@ func (c Config) makeIssueUnlabeledEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueAssignedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueAssignedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d assigned to %s", ev.GetIssue().GetNumber(), ev.GetAssignee().GetLogin()),
 		Color: discord.Color(c.Colors.IssueAssigned.Success),
@@ -123,7 +123,7 @@ func (c Config) makeIssueAssignedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d unassigned to %s", ev.GetIssue().GetNumber(), ev.GetAssignee().GetLogin()),
 		Color: discord.Color(c.Colors.IssueUnassigned.Success),
@@ -134,7 +134,7 @@ func (c Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		// TODO: Add milestone title
 		Title: fmt.Sprintf("Issue #%d: milestone added", ev.GetIssue().GetNumber()),
@@ -146,7 +146,7 @@ func (c Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueDemilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueDemilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d: milestone removed", ev.GetIssue().GetNumber()),
 		Color: discord.Color(c.Colors.IssueDemilestoned.Success),
@@ -157,7 +157,7 @@ func (c Config) makeIssueDemilestonedEmbed(ev *github.IssuesEvent) discord.Embed
 	}
 }
 
-func (c Config) makeIssueDeletedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueDeletedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d deleted", ev.GetIssue().GetNumber()),
 		Color: discord.Color(c.Colors.IssueDeleted.Success),
@@ -168,7 +168,7 @@ func (c Config) makeIssueDeletedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueLockedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueLockedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d locked", ev.GetIssue().GetNumber()),
 		Color: discord.Color(c.Colors.IssueLocked.Success),
@@ -179,7 +179,7 @@ func (c Config) makeIssueLockedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueUnlockedEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueUnlockedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d unlocked", ev.GetIssue().GetNumber()),
 		Color: discord.Color(c.Colors.IssueUnlocked.Success),
@@ -190,7 +190,7 @@ func (c Config) makeIssueUnlockedEmbed(ev *github.IssuesEvent) discord.Embed {
 	}
 }
 
-func (c Config) makeIssueTransferredEmbed(ev *github.IssuesEvent) discord.Embed {
+func (c *Config) makeIssueTransferredEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Issue #%d transferred to %s", ev.GetIssue().GetNumber(), ev.GetRepo().GetFullName()),
 		Color: discord.Color(c.Colors.IssueTransferred.Success),
@@ -204,7 +204,7 @@ func (c Config) makeIssueTransferredEmbed(ev *github.IssuesEvent) discord.Embed 
 /// END IssuesEvent Discord embeds
 /// START IssueCommentEvent Discord embeds
 
-func (c Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Embed {
+func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	issue, comment := ev.GetIssue(), ev.GetComment()
 
 	var fields *[]discord.EmbedField
@@ -236,7 +236,7 @@ func (c Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Embe
 	}
 }
 
-func (c Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) discord.Embed {
+func (c *Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	return discord.Embed{
 		Title:       fmt.Sprintf("Deleted comment on issue #%d", ev.GetIssue().GetNumber()),
 		Description: fmt.Sprintf("Comment ID: %s", strconv.FormatInt(*ev.GetComment().ID, 16)),
@@ -251,7 +251,7 @@ func (c Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) disco
 /// END IssueCommentEvent Discord embeds
 /// START PullRequestEvent Discord embeds
 
-func (c Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	pr := ev.GetPullRequest()
 
 	var fields *[]discord.EmbedField
@@ -310,7 +310,7 @@ func (c Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRClosedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRClosedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Pull request #%d closed", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRClosed.Success),
@@ -322,7 +322,7 @@ func (c Config) makePRClosedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRReopenedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRReopenedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Pull request #%d reopened", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRReopened.Success),
@@ -334,7 +334,7 @@ func (c Config) makePRReopenedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRAssignedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRAssignedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Pull request #%d assigned to %s", ev.GetPullRequest().GetNumber(), ev.GetAssignee().GetLogin()),
 		Color: discord.Color(c.Colors.PRAssigned.Success),
@@ -346,7 +346,7 @@ func (c Config) makePRAssignedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRUnassignedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRUnassignedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Pull request #%d unassigned from %s", ev.GetPullRequest().GetNumber(), ev.GetAssignee().GetLogin()),
 		Color: discord.Color(c.Colors.PRUnassigned.Success),
@@ -358,7 +358,7 @@ func (c Config) makePRUnassignedEmbed(ev *github.PullRequestEvent) discord.Embed
 	}
 }
 
-func (c Config) makePRDeletedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRDeletedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Deleted pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRDeleted.Success),
@@ -370,7 +370,7 @@ func (c Config) makePRDeletedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRTransferredEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRTransferredEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Transferred pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRTransferred.Success),
@@ -382,7 +382,7 @@ func (c Config) makePRTransferredEmbed(ev *github.PullRequestEvent) discord.Embe
 	}
 }
 
-func (c Config) makePRLabeledEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRLabeledEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Labeled pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRLabeled.Success),
@@ -394,7 +394,7 @@ func (c Config) makePRLabeledEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRUnlabeledEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRUnlabeledEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Unlabeled pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRUnlabeled.Success),
@@ -406,7 +406,7 @@ func (c Config) makePRUnlabeledEmbed(ev *github.PullRequestEvent) discord.Embed 
 	}
 }
 
-func (c Config) makePRMilestonedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRMilestonedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Milestoned pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRMilestoned.Success),
@@ -418,7 +418,7 @@ func (c Config) makePRMilestonedEmbed(ev *github.PullRequestEvent) discord.Embed
 	}
 }
 
-func (c Config) makePRDemilestonedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRDemilestonedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Demilestoned pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRDemilestoned.Success),
@@ -430,7 +430,7 @@ func (c Config) makePRDemilestonedEmbed(ev *github.PullRequestEvent) discord.Emb
 	}
 }
 
-func (c Config) makePRLockedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRLockedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Locked pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRLocked.Success),
@@ -442,7 +442,7 @@ func (c Config) makePRLockedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRUnlockedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRUnlockedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Unlocked pull request #%d", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRUnlocked.Success),
@@ -454,7 +454,7 @@ func (c Config) makePRUnlockedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 }
 
-func (c Config) makePRReviewRequestedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRReviewRequestedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Review requested for pull request #%d", ev.GetPullRequest().GetNumber()),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
@@ -466,7 +466,7 @@ func (c Config) makePRReviewRequestedEmbed(ev *github.PullRequestEvent) discord.
 	}
 }
 
-func (c Config) makePRReviewRequestRemovedEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRReviewRequestRemovedEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Review request removed for pull request #%d", ev.GetPullRequest().GetNumber()),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
@@ -478,7 +478,7 @@ func (c Config) makePRReviewRequestRemovedEmbed(ev *github.PullRequestEvent) dis
 	}
 }
 
-func (c Config) makePRReadyForReviewEmbed(ev *github.PullRequestEvent) discord.Embed {
+func (c *Config) makePRReadyForReviewEmbed(ev *github.PullRequestEvent) discord.Embed {
 	return discord.Embed{
 		Title: fmt.Sprintf("Pull request #%d is ready for review", ev.GetPullRequest().GetNumber()),
 		Color: discord.Color(c.Colors.PRReadyForReview.Success),
@@ -493,7 +493,7 @@ func (c Config) makePRReadyForReviewEmbed(ev *github.PullRequestEvent) discord.E
 /// END PullRequestEvent Discord embeds
 /// START PullRequestReviewEvent Discord embeds
 
-func (c Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Embed {
+func (c *Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Embed {
 	pr, review := ev.GetPullRequest(), ev.GetReview()
 
 	return discord.Embed{
@@ -510,7 +510,7 @@ func (c Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Emb
 	}
 }
 
-func (c Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) discord.Embed {
+func (c *Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) discord.Embed {
 	pr, review := ev.GetPullRequest(), ev.GetReview()
 
 	return discord.Embed{
@@ -528,7 +528,7 @@ func (c Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) di
 /// END PullRequestReviewEvent Discord embeds
 /// START PullRequestReviewCommentEvent Discord embeds
 
-func (c Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEvent) discord.Embed {
+func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEvent) discord.Embed {
 	pr, comment := ev.GetPullRequest(), ev.GetComment()
 
 	var fields *[]discord.EmbedField
@@ -555,7 +555,7 @@ func (c Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEven
 	}
 }
 
-func (c Config) makePRReviewCommentDeletedEmbed(ev *github.PullRequestReviewCommentEvent) discord.Embed {
+func (c *Config) makePRReviewCommentDeletedEmbed(ev *github.PullRequestReviewCommentEvent) discord.Embed {
 	pr, comment := ev.GetPullRequest(), ev.GetComment()
 
 	return discord.Embed{
@@ -572,7 +572,7 @@ func (c Config) makePRReviewCommentDeletedEmbed(ev *github.PullRequestReviewComm
 /// END PullRequestReviewCommentEvent Discord embeds
 /// START PullRequestReviewThreadEvent Discord embeds
 
-func (c Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
+func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
 	pr, t := ev.GetPullRequest(), ev.GetThread()
 
 	var fields *[]discord.EmbedField
@@ -596,7 +596,7 @@ func (c Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent)
 	}
 }
 
-func (c Config) makePRReviewThreadResolvedEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
+func (c *Config) makePRReviewThreadResolvedEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
 	pr, t := ev.GetPullRequest(), ev.GetThread()
 
 	return discord.Embed{
@@ -610,7 +610,7 @@ func (c Config) makePRReviewThreadResolvedEmbed(ev *github.PullRequestReviewThre
 	}
 }
 
-func (c Config) makePRReviewThreadUnresolvedEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
+func (c *Config) makePRReviewThreadUnresolvedEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
 	pr, t := ev.GetPullRequest(), ev.GetThread()
 
 	return discord.Embed{
