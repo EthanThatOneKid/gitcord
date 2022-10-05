@@ -17,26 +17,24 @@ type client struct {
 }
 
 type Client struct {
-	*client
+	Issues         IssuesClient
+	Comments       IssueCommentClient
+	PRs            PRsClient
+	Reviews        ReviewsClient
+	ReviewComments ReviewCommentsClient
+	ReviewThreads  ReviewThreadsClient
 
-	Issues         *IssuesClient
-	Comments       *IssueCommentClient
-	PRs            *PRsClient
-	Reviews        *ReviewsClient
-	ReviewComments *ReviewCommentsClient
-	ReviewThreads  *ReviewThreadsClient
+	client *client
+}
+
+func (c *Client) WithContext(ctx context.Context) *Client {
+	cpy := *c
+	cpy.client = cpy.client.WithContext(ctx)
+	return &cpy
 }
 
 func NewClient(cfg Config) *Client {
-	c := newClient(cfg)
-	return &Client{
-		Issues:         &IssuesClient{c, context.Background()},
-		Comments:       &IssueCommentClient{c, context.Background()},
-		PRs:            &PRsClient{c, context.Background()},
-		Reviews:        &ReviewsClient{c, context.Background()},
-		ReviewComments: &ReviewCommentsClient{c, context.Background()},
-		ReviewThreads:  &ReviewThreadsClient{c, context.Background()},
-	}
+	return &Client{client: newClient(cfg)}
 }
 
 func newClient(cfg Config) *client {
@@ -55,11 +53,11 @@ func newClient(cfg Config) *client {
 	}
 }
 
-func (c *client) logln(v ...any) {
-	if c.config.Logger != nil {
-		c.config.Logger.Println(v...)
-	}
-}
+// func (c client) logln(v ...any) {
+// 	if c.config.Logger != nil {
+// 		c.config.Logger.Println(v...)
+// 	}
+// }
 
 func (c *client) WithContext(ctx context.Context) *client {
 	return &client{
@@ -69,22 +67,11 @@ func (c *client) WithContext(ctx context.Context) *client {
 	}
 }
 
-func (c *Client) WithContext(ctx context.Context) *Client {
-	return &Client{
-		Issues:         c.Issues.WithContext(ctx),
-		Comments:       c.Comments.WithContext(ctx),
-		PRs:            c.PRs.WithContext(ctx),
-		Reviews:        c.Reviews.WithContext(ctx),
-		ReviewComments: c.ReviewComments.WithContext(ctx),
-		ReviewThreads:  c.ReviewThreads.WithContext(ctx),
-	}
-}
-
 // DoEvent handles a GitHub event
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
 func (c Client) DoEvent() error {
-	ev, err := c.github.FindEvent(c.config.EventID)
+	ev, err := c.client.github.FindEvent(c.client.config.EventID)
 	if err != nil {
 		return err
 	}

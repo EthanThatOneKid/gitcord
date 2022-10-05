@@ -1,24 +1,13 @@
 package gitcord
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/google/go-github/v47/github"
 	"github.com/pkg/errors"
 )
 
-type ReviewsClient struct {
-	*client
-	ctx context.Context
-}
-
-func (c *ReviewsClient) WithContext(ctx context.Context) *ReviewsClient {
-	cpy := *c
-	cpy.client = cpy.client.WithContext(ctx)
-	cpy.ctx = ctx
-	return &cpy
-}
+type ReviewsClient client
 
 func (c *ReviewsClient) EmbedReviewMsg(ev *github.PullRequestReviewEvent) error {
 	pr := ev.GetPullRequest()

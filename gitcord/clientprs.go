@@ -1,7 +1,6 @@
 package gitcord
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/diamondburned/arikawa/v3/api"
@@ -10,17 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type PRsClient struct {
-	*client
-	ctx context.Context
-}
-
-func (c *PRsClient) WithContext(ctx context.Context) *PRsClient {
-	cpy := *c
-	cpy.client = cpy.client.WithContext(ctx)
-	cpy.ctx = ctx
-	return &cpy
-}
+type PRsClient client
 
 func (c *PRsClient) OpenAndEmbedInitialMsg(ev *github.PullRequestEvent) error {
 	pr := ev.GetPullRequest()
@@ -31,13 +20,13 @@ func (c *PRsClient) OpenAndEmbedInitialMsg(ev *github.PullRequestEvent) error {
 			if !c.config.ForceOpen {
 				return fmt.Errorf("channel %d is not a public thread", ch.ID)
 			}
-			c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", ch.ID))
+			// c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", ch.ID))
 		}
 
 		if !c.config.ForceOpen {
 			return fmt.Errorf("pull request %d already has a thread %d", pr.GetNumber(), ch.ID)
 		}
-		c.logln(fmt.Sprintf("ignoring existing thread %d", ch.ID))
+		// c.logln(fmt.Sprintf("ignoring existing thread %d", ch.ID))
 	}
 
 	ch, err := c.discord.StartThreadWithoutMessage(c.config.DiscordChannelID, api.StartThreadData{

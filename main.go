@@ -44,7 +44,7 @@ func NewApp() *App {
 				Name:    "force",
 				Aliases: []string{"f"},
 				Value:   false,
-				Usage:   "force create threads for locked issues",
+				Usage:   "force open threads",
 			},
 		},
 		Before: func(ctx *cli.Context) error {

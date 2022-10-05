@@ -1,24 +1,13 @@
 package gitcord
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/google/go-github/v47/github"
 	"github.com/pkg/errors"
 )
 
-type IssueCommentClient struct {
-	*client
-	ctx context.Context
-}
-
-func (c *IssueCommentClient) WithContext(ctx context.Context) *IssueCommentClient {
-	cpy := *c
-	cpy.client = cpy.client.WithContext(ctx)
-	cpy.ctx = ctx
-	return &cpy
-}
+type IssueCommentClient client
 
 func (c *IssueCommentClient) EmbedIssueCommentMsg(ev *github.IssueCommentEvent) error {
 	issue := ev.GetIssue()
