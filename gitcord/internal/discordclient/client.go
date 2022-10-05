@@ -61,7 +61,7 @@ func (c *Client) activeThreads() ([]discord.Channel, error) {
 	return relevantThreads, nil
 }
 
-func (c *Client) FindThreadByIssue(id int) *discord.Channel {
+func (c *Client) FindThreadByNumber(id int) *discord.Channel {
 	chs, err := c.activeThreads()
 
 	if err != nil {

@@ -2,8 +2,8 @@ package githubclient
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/google/go-github/v47/github"
@@ -54,8 +54,9 @@ func (c *Client) logln(v ...any) {
 	}
 }
 
-func (c *Client) FindEvent(eventID int64) (*github.Event, error) {
+func (c Client) FindEvent(eventID int64) (*github.Event, error) {
 	owner, repo := c.config.SplitGitHubRepo()
+
 	evs, resp, err := c.Activity.ListRepositoryEvents(c.ctx, owner, repo, nil)
 	if err != nil {
 		return nil, err
@@ -63,13 +64,12 @@ func (c *Client) FindEvent(eventID int64) (*github.Event, error) {
 
 	c.logln("found", len(evs), "events, last page:", resp.LastPage)
 
-	eventIDStr := strconv.FormatInt(eventID, 10)
+	eventIDStr := fmt.Sprintf("%d", eventID)
 	for _, ev := range evs {
 		if ev.GetID() == eventIDStr {
 			return ev, nil
 		}
 	}
 
-	c.logln("event not found")
-	return nil, nil
+	return nil, fmt.Errorf("event %d not found", eventID)
 }

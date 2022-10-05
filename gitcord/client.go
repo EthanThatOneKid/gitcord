@@ -18,17 +18,24 @@ type client struct {
 
 type Client struct {
 	*client
-	Issues   *IssuesClient
-	PRs      *PRsClient
-	Comments *IssueCommentClient
+
+	Issues         *IssuesClient
+	Comments       *IssueCommentClient
+	PRs            *PRsClient
+	Reviews        *ReviewsClient
+	ReviewComments *ReviewCommentsClient
+	ReviewThreads  *ReviewThreadsClient
 }
 
 func NewClient(cfg Config) *Client {
 	c := newClient(cfg)
 	return &Client{
-		Issues:   &IssuesClient{c, context.Background()},
-		PRs:      &PRsClient{c, context.Background()},
-		Comments: &IssueCommentClient{c, context.Background()},
+		Issues:         &IssuesClient{c, context.Background()},
+		Comments:       &IssueCommentClient{c, context.Background()},
+		PRs:            &PRsClient{c, context.Background()},
+		Reviews:        &ReviewsClient{c, context.Background()},
+		ReviewComments: &ReviewCommentsClient{c, context.Background()},
+		ReviewThreads:  &ReviewThreadsClient{c, context.Background()},
 	}
 }
 
@@ -64,125 +71,147 @@ func (c *client) WithContext(ctx context.Context) *client {
 
 func (c *Client) WithContext(ctx context.Context) *Client {
 	return &Client{
-		Issues:   c.Issues.WithContext(ctx),
-		PRs:      c.PRs.WithContext(ctx),
-		Comments: c.Comments.WithContext(ctx),
+		Issues:         c.Issues.WithContext(ctx),
+		Comments:       c.Comments.WithContext(ctx),
+		PRs:            c.PRs.WithContext(ctx),
+		Reviews:        c.Reviews.WithContext(ctx),
+		ReviewComments: c.ReviewComments.WithContext(ctx),
+		ReviewThreads:  c.ReviewThreads.WithContext(ctx),
 	}
 }
 
+// DoEvent handles a GitHub event
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
 func (c Client) DoEvent() error {
 	ev, err := c.github.FindEvent(c.config.EventID)
 	if err != nil {
 		return err
 	}
 
-	payload, err := ev.ParsePayload()
+	data, err := ev.ParsePayload()
 	if err != nil {
 		return err
 	}
 
 	switch *ev.Type {
 	case "IssuesEvent":
-		return c.handleIssuesEvent(ev, payload.(*github.IssuesEvent))
+		return c.handleIssuesEvent(data.(*github.IssuesEvent))
 	case "IssueCommentEvent":
-		return c.handleIssueCommentEvent(ev, payload.(*github.IssueCommentEvent))
+		return c.handleIssueCommentEvent(data.(*github.IssueCommentEvent))
 	case "PullRequestEvent":
-		return c.handlePullRequestEvent(ev, payload.(*github.PullRequestEvent))
+		return c.handlePREvent(data.(*github.PullRequestEvent))
 	case "PullRequestReviewEvent":
-		return c.handlePullRequestReviewEvent(ev, payload.(*github.PullRequestReviewEvent))
+		return c.handlePullRequestReviewEvent(data.(*github.PullRequestReviewEvent))
 	case "PullRequestReviewCommentEvent":
-		return c.handlePullRequestReviewCommentEvent(ev, payload.(*github.PullRequestReviewCommentEvent))
+		return c.handlePullRequestReviewCommentEvent(data.(*github.PullRequestReviewCommentEvent))
 	case "PullRequestReviewThreadEvent":
-		return c.handlePullRequestReviewThreadEvent(ev, payload.(*github.PullRequestReviewThreadEvent))
+		return c.handlePullRequestReviewThreadEvent(data.(*github.PullRequestReviewThreadEvent))
 	default:
 		return nil
 	}
 }
 
 // handleIssuesEvent handles an IssuesEvent
-func (c *Client) handleIssuesEvent(ev *github.Event, payload *github.IssuesEvent) error {
-	switch *payload.Action {
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#issuesevent
+func (c Client) handleIssuesEvent(ev *github.IssuesEvent) error {
+	switch *ev.Action {
 	case "opened":
-		return c.Issues.OpenThread(payload)
-
-	case "closed":
-		err := c.Issues.EmbedClosedMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "reopened":
-		err := c.Issues.EmbedReopenedMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
+		return c.Issues.OpenAndEmbedInitialMsg(ev)
 	case "edited":
-		return c.Issues.EditInitialMsg(payload)
-
-	case "assigned":
-		err := c.Issues.EmbedAssignedMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "unassigned":
-		err := c.Issues.EmbedUnassignedMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "labeled":
-		err := c.Issues.EmbedLabeledMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "unlabeled":
-		err := c.Issues.EmbedUnlabeledMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "locked":
-		err := c.Issues.EmbedLockedMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "unlocked":
-		err := c.Issues.EmbedUnlockedMsg(payload)
-		if err != nil {
-			return err
-		}
-		return c.Issues.EditInitialMsg(payload)
-
-	case "transferred":
-		return c.Issues.EmbedTransferred(payload)
-
+		return c.Issues.EditInitialMsg(ev)
 	case "deleted":
-		return c.Issues.EmbedDeleted(payload)
+		return c.Issues.EmbedDeletedMsg(ev)
+	case "transferred":
+		return c.Issues.EmbedTransferredMsg(ev)
 
-	case "milestoned":
-		err := c.Issues.EmbedMilestoned(payload)
+	case "closed", "reopened", "assigned", "unassigned", "labeled", "unlabeled", "locked", "unlocked", "milestoned", "demilestoned":
+		var err error
+		switch *ev.Action {
+		case "closed":
+			err = c.Issues.EmbedClosedMsg(ev)
+		case "reopened":
+			err = c.Issues.EmbedReopenedMsg(ev)
+		case "assigned":
+			err = c.Issues.EmbedAssignedMsg(ev)
+		case "unassigned":
+			err = c.Issues.EmbedUnassignedMsg(ev)
+		case "labeled":
+			err = c.Issues.EmbedLabeledMsg(ev)
+		case "unlabeled":
+			err = c.Issues.EmbedUnlabeledMsg(ev)
+		case "locked":
+			err = c.Issues.EmbedLockedMsg(ev)
+		case "unlocked":
+			err = c.Issues.EmbedUnlockedMsg(ev)
+		case "milestoned":
+			err = c.Issues.EmbedMilestonedMsg(ev)
+		case "demilestoned":
+			err = c.Issues.EmbedDemilestonedMsg(ev)
+		}
+
 		if err != nil {
 			return err
 		}
-		return c.Issues.EditInitialMsg(payload)
 
-	case "demilestoned":
-		err := c.Issues.EmbedDemilestoned(payload)
+		return c.Issues.EditInitialMsg(ev)
+
+	default:
+		return nil
+	}
+}
+
+// handlePullRequestEvent handles a PullRequestEvent
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestevent
+func (c *Client) handlePREvent(ev *github.PullRequestEvent) error {
+	switch *ev.Action {
+	case "opened":
+		return c.PRs.OpenAndEmbedInitialMsg(ev)
+	case "edited":
+		return c.PRs.EditInitialMsg(ev)
+	case "deleted":
+		return c.PRs.EmbedDeletedMsg(ev)
+	case "transferred":
+		return c.PRs.EmbedTransferredMsg(ev)
+	case "review_requested":
+		return c.PRs.EmbedReviewRequestedMsg(ev)
+	case "review_request_removed":
+		return c.PRs.EmbedReviewRequestRemovedMsg(ev)
+	case "ready_for_review":
+		return c.PRs.EmbedReadyForReviewMsg(ev)
+
+	case "closed", "reopened", "assigned", "unassigned", "labeled", "unlabeled", "locked", "unlocked", "milestoned", "demilestoned":
+		var err error
+		switch *ev.Action {
+		case "closed":
+			err = c.PRs.EmbedClosedMsg(ev)
+		case "reopened":
+			err = c.PRs.EmbedReopenedMsg(ev)
+		case "assigned":
+			err = c.PRs.EmbedAssignedMsg(ev)
+		case "unassigned":
+			err = c.PRs.EmbedUnassignedMsg(ev)
+		case "labeled":
+			err = c.PRs.EmbedLabeledMsg(ev)
+		case "unlabeled":
+			err = c.PRs.EmbedUnlabeledMsg(ev)
+		case "locked":
+			err = c.PRs.EmbedLockedMsg(ev)
+		case "unlocked":
+			err = c.PRs.EmbedUnlockedMsg(ev)
+		case "milestoned":
+			err = c.PRs.EmbedMilestonedMsg(ev)
+		case "demilestoned":
+			err = c.PRs.EmbedDemilestonedMsg(ev)
+		}
+
 		if err != nil {
 			return err
 		}
-		return c.Issues.EditInitialMsg(payload)
+
+		return c.PRs.EditInitialMsg(ev)
 
 	default:
 		return nil
@@ -190,118 +219,66 @@ func (c *Client) handleIssuesEvent(ev *github.Event, payload *github.IssuesEvent
 }
 
 // handleIssueCommentEvent handles an IssueCommentEvent
-func (c *client) handleIssueCommentEvent(ev *github.Event, payload *github.IssueCommentEvent) error {
-	switch *payload.Action {
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#issuecommentevent
+func (c Client) handleIssueCommentEvent(ev *github.IssueCommentEvent) error {
+	switch *ev.Action {
 	case "created":
-		return c.handleIssueCommentCreated(ev, payload)
+		return c.Comments.EmbedIssueCommentMsg(ev)
 	case "edited":
-		return c.handleIssueCommentEdited(ev, payload)
+		return c.Comments.EditIssueCommentMsg(ev)
 	case "deleted":
-		return c.handleIssueCommentDeleted(ev, payload)
-	default:
-		return nil
-	}
-}
-
-// handlePullRequestEvent handles a PullRequestEvent
-func (c *client) handlePullRequestEvent(ev *github.Event, payload *github.PullRequestEvent) error {
-	switch *payload.Action {
-	case "opened":
-		return c.handlePullRequestOpened(ev, payload)
-	case "closed":
-		return c.handlePullRequestClosed(ev, payload)
-	case "reopened":
-		return c.handlePullRequestReopened(ev, payload)
-	case "edited":
-		return c.handlePullRequestEdited(ev, payload)
-	case "assigned":
-		return c.handlePullRequestAssigned(ev, payload)
-	case "unassigned":
-		return c.handlePullRequestUnassigned(ev, payload)
-	case "review_requested":
-		return c.handlePullRequestReviewRequested(ev, payload)
-	case "review_request_removed":
-		return c.handlePullRequestReviewRequestRemoved(ev, payload)
-	case "labeled":
-		return c.handlePullRequestLabeled(ev, payload)
-	case "unlabeled":
-		return c.handlePullRequestUnlabeled(ev, payload)
-	case "synchronize":
-		return c.handlePullRequestSynchronize(ev, payload)
-	case "ready_for_review":
-		return c.handlePullRequestReadyForReview(ev, payload)
-	case "locked":
-		return c.handlePullRequestLocked(ev, payload)
-	case "unlocked":
-		return c.handlePullRequestUnlocked(ev, payload)
-	case "reopened":
-		return c.handlePullRequestReopened(ev, payload)
-	case "edited":
-		return c.handlePullRequestEdited(ev, payload)
-	case "assigned":
-		return c.handlePullRequestAssigned(ev, payload)
-	case "unassigned":
-		return c.handlePullRequestUnassigned(ev, payload)
-	case "review_requested":
-		return c.handlePullRequestReviewRequested(ev, payload)
-	case "review_request_removed":
-		return c.handlePullRequestReviewRequestRemoved(ev, payload)
-	case "labeled":
-		return c.handlePullRequestLabeled(ev, payload)
-	case "unlabeled":
-		return c.handlePullRequestUnlabeled(ev, payload)
-	case "synchronize":
-		return c.handlePullRequestSynchronize(ev, payload)
-	case "ready_for_review":
-		return c.handlePullRequestReadyForReview(ev, payload)
-	case "locked":
-		return c.handlePullRequestLocked(ev, payload)
-	case "unlocked":
-		return c.handlePullRequestUnlocked(ev, payload)
+		return c.Comments.EmbedDeletedMsg(ev)
 	default:
 		return nil
 	}
 }
 
 // handlePullRequestReviewEvent handles a PullRequestReviewEvent
-func (c *client) handlePullRequestReviewEvent(ev *github.Event, payload *github.PullRequestReviewEvent) error {
-	switch *payload.Action {
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestreviewevent
+func (c *Client) handlePullRequestReviewEvent(ev *github.PullRequestReviewEvent) error {
+	switch *ev.Action {
 	case "submitted":
-		return c.handlePullRequestReviewSubmitted(ev, payload)
+		return c.Reviews.EmbedReviewMsg(ev)
 	case "edited":
-		return c.handlePullRequestReviewEdited(ev, payload)
+		return c.Reviews.EditReviewMsg(ev)
 	case "dismissed":
-		return c.handlePullRequestReviewDismissed(ev, payload)
+		return c.Reviews.EmbedReviewDismissedMsg(ev)
 	default:
 		return nil
 	}
 }
 
 // handlePullRequestReviewCommentEvent handles a PullRequestReviewCommentEvent
-func (c *client) handlePullRequestReviewCommentEvent(ev *github.Event, payload *github.PullRequestReviewCommentEvent) error {
-	switch *payload.Action {
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestreviewcommentevent
+func (c *Client) handlePullRequestReviewCommentEvent(ev *github.PullRequestReviewCommentEvent) error {
+	switch *ev.Action {
 	case "created":
-		return c.handlePullRequestReviewCommentCreated(ev, payload)
+		return c.ReviewComments.EmbedReviewCommentMsg(ev)
 	case "edited":
-		return c.handlePullRequestReviewCommentEdited(ev, payload)
+		return c.ReviewComments.EditReviewCommentMsg(ev)
 	case "deleted":
-		return c.handlePullRequestReviewCommentDeleted(ev, payload)
+		return c.ReviewComments.EmbedReviewCommentDeletedMsg(ev)
 	default:
 		return nil
 	}
 }
 
 // handlePullRequestReviewThreadEvent handles a PullRequestReviewThreadEvent
-func (c *client) handlePullRequestReviewThreadEvent(ev *github.Event, payload *github.PullRequestReviewThreadEvent) error {
-	switch *payload.Action {
+//
+// https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types#pullrequestreviewthreadevent
+func (c *Client) handlePullRequestReviewThreadEvent(ev *github.PullRequestReviewThreadEvent) error {
+	switch *ev.Action {
 	case "created":
-		return c.handlePullRequestReviewThreadCreated(ev, payload)
+		return c.ReviewThreads.EmbedReviewThreadMsg(ev)
 	case "updated":
-		return c.handlePullRequestReviewThreadUpdated(ev, payload)
+		return c.ReviewThreads.EditReviewThreadMsg(ev)
 	case "resolved":
-		return c.handlePullRequestReviewThreadResolved(ev, payload)
+		return c.ReviewThreads.EmbedReviewThreadResolvedMsg(ev)
 	case "unresolved":
-		return c.handlePullRequestReviewThreadUnresolved(ev, payload)
+		return c.ReviewThreads.EmbedReviewThreadUnresolvedMsg(ev)
 	default:
 		return nil
 	}

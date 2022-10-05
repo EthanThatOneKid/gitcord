@@ -10,9 +10,10 @@ In order to set up Gitcord for a GitHub repository, you must first gather some i
 Collect the information listed below in any order.
 
 - GitHub personal access token: <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>
-- 
 
 ### Set up your Discord server
+
+- Discord bot token: <https://discord.com/developers/docs/topics/oauth2>
 
 ## Dev 👩‍💻
 
@@ -22,7 +23,9 @@ Collect the information listed below in any order.
 cp .env.example .env # populate .env
 source .env
 
-go run . 0
+go run . <event_id>
+
+# ex: go run . 24292424235
 ```
 
 ### Testing 👷‍♂️

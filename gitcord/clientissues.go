@@ -22,22 +22,22 @@ func (c *IssuesClient) WithContext(ctx context.Context) *IssuesClient {
 	return &cpy
 }
 
-func (c *IssuesClient) OpenThread(ev *github.IssuesEvent) error {
+func (c *IssuesClient) OpenAndEmbedInitialMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch != nil {
 		if ch.Type != discord.GuildPublicThread {
-			if !c.config.ForceCreateThread {
+			if !c.config.ForceOpen {
 				return fmt.Errorf("channel %d is not a public thread", ch.ID)
 			}
-			c.logln("ignoring channel %d is not a public thread", ch.ID)
+			c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", ch.ID))
 		}
 
-		if !c.config.ForceCreateThread {
+		if !c.config.ForceOpen {
 			return fmt.Errorf("issue %d already has a thread %d", issue.GetNumber(), ch.ID)
 		}
-		c.logln("ignoring existing thread %d", ch.ID)
+		c.logln(fmt.Sprintf("ignoring existing thread %d", ch.ID))
 	}
 
 	ch, err := c.discord.StartThreadWithoutMessage(c.config.DiscordChannelID, api.StartThreadData{
@@ -60,7 +60,7 @@ func (c *IssuesClient) OpenThread(ev *github.IssuesEvent) error {
 func (c *IssuesClient) EditInitialMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -81,7 +81,7 @@ func (c *IssuesClient) EditInitialMsg(ev *github.IssuesEvent) error {
 func (c *IssuesClient) EmbedClosedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -97,7 +97,7 @@ func (c *IssuesClient) EmbedClosedMsg(ev *github.IssuesEvent) error {
 func (c *IssuesClient) EmbedReopenedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -113,7 +113,7 @@ func (c *IssuesClient) EmbedReopenedMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedDeletedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -129,7 +129,7 @@ func (c IssuesClient) EmbedDeletedMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedTransferredMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -145,7 +145,7 @@ func (c IssuesClient) EmbedTransferredMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedAssignedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -161,7 +161,7 @@ func (c IssuesClient) EmbedAssignedMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedUnassignedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -177,7 +177,7 @@ func (c IssuesClient) EmbedUnassignedMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedLabeledMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -193,7 +193,7 @@ func (c IssuesClient) EmbedLabeledMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedUnlabeledMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -209,7 +209,7 @@ func (c IssuesClient) EmbedUnlabeledMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedLockedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
@@ -225,12 +225,44 @@ func (c IssuesClient) EmbedLockedMsg(ev *github.IssuesEvent) error {
 func (c IssuesClient) EmbedUnlockedMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
-	ch := c.discord.FindThreadByIssue(issue.GetNumber())
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
 	if ch == nil {
 		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
 	}
 
 	_, err := c.discord.SendEmbeds(ch.ID, c.config.makeIssueUnlockedEmbed(ev))
+	if err != nil {
+		return errors.Wrap(err, "failed to send message")
+	}
+
+	return nil
+}
+
+func (c IssuesClient) EmbedMilestonedMsg(ev *github.IssuesEvent) error {
+	issue := ev.GetIssue()
+
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
+	if ch == nil {
+		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
+	}
+
+	_, err := c.discord.SendEmbeds(ch.ID, c.config.makeIssueMilestonedEmbed(ev))
+	if err != nil {
+		return errors.Wrap(err, "failed to send message")
+	}
+
+	return nil
+}
+
+func (c IssuesClient) EmbedDemilestonedMsg(ev *github.IssuesEvent) error {
+	issue := ev.GetIssue()
+
+	ch := c.discord.FindThreadByNumber(issue.GetNumber())
+	if ch == nil {
+		return fmt.Errorf("issue %d does not have a thread", issue.GetNumber())
+	}
+
+	_, err := c.discord.SendEmbeds(ch.ID, c.config.makeIssueDemilestonedEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}

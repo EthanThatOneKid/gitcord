@@ -2,13 +2,17 @@ name: Gitcord
 
 on:
   issues:
-    types: [opened, reopened, closed, deleted, transferred]
-  pull_request:
-    types: [opened, reopened, closed, deleted, ready_for_review]
+    types: [opened, edited, deleted, transferred, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, demilestoned]
   issue_comment:
-    types: [created, edited]
+    types: [created, edited, deleted]
+  pull_request:
+    types: [opened, edited, deleted, transferred, review_requested, review_request_removed, ready_for_review, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, demilestoned]
   pull_request_review:
-    types: [submitted]
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  pull_request_review_thread:
+    types: [created, updated, resolved, unresolved]
 
 jobs:
   gitcord:
@@ -20,3 +24,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANEL_ID }}
           DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}

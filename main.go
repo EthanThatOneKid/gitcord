@@ -38,7 +38,7 @@ func NewApp() *App {
 
 	app.App = &cli.App{
 		Name:     "gitcord",
-		HelpName: "expand your GitHub issues into Discord channels",
+		HelpName: "expand GitHub into Discord",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "force",
@@ -58,7 +58,7 @@ func NewApp() *App {
 				return errors.Wrap(err, "failed to parse Discord guild ID")
 			}
 
-			eventID, err := strconv.ParseInt(ctx.Args().Get(1), 10, 64)
+			eventID, err := strconv.ParseInt(ctx.Args().Get(0), 10, 64)
 			if err != nil {
 				return errors.Wrap(err, "failed to parse event ID")
 			}
@@ -68,12 +68,12 @@ func NewApp() *App {
 				GitHubOAuth: oauth2.StaticTokenSource(&oauth2.Token{
 					AccessToken: os.Getenv("GITHUB_TOKEN"),
 				}),
-				DiscordToken:      os.Getenv("DISCORD_TOKEN"),
-				DiscordChannelID:  discord.ChannelID(channelID),
-				DiscordGuildID:    discord.GuildID(guildID),
-				ForceCreateThread: ctx.Bool("force"),
-				EventID:           eventID,
-				Logger:            log.Default(),
+				DiscordToken:     os.Getenv("DISCORD_TOKEN"),
+				DiscordChannelID: discord.ChannelID(channelID),
+				DiscordGuildID:   discord.GuildID(guildID),
+				ForceOpen:        ctx.Bool("force"),
+				EventID:          eventID,
+				Logger:           log.Default(),
 			}
 
 			if err := parseColors(map[string]*gitcord.StatusColors{
