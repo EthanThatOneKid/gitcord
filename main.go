@@ -53,9 +53,9 @@ func NewApp() *App {
 				return errors.Wrap(err, "failed to parse Discord channel ID")
 			}
 
-			guildID, err := discord.ParseSnowflake(os.Getenv("DISCORD_GUILD_ID"))
+			colors, err := parseEnvColors()
 			if err != nil {
-				return errors.Wrap(err, "failed to parse Discord guild ID")
+				return err
 			}
 
 			config := gitcord.Config{
@@ -65,16 +65,9 @@ func NewApp() *App {
 				}),
 				DiscordToken:     os.Getenv("DISCORD_TOKEN"),
 				DiscordChannelID: discord.ChannelID(channelID),
-				DiscordGuildID:   discord.GuildID(guildID),
+				ColorScheme:      colors,
 				ForceOpen:        ctx.Bool("force"),
 				Logger:           log.Default(),
-			}
-
-			if err := parseColors(map[string]*gitcord.StatusColors{
-				"GITCORD_COLOR_ISSUE": &config.Colors.IssueOpened,
-				"GITCORD_COLOR_PR":    &config.Colors.PROpened,
-			}); err != nil {
-				return err
 			}
 
 			app.client = gitcord.NewClient(config).WithContext(ctx.Context)
@@ -93,20 +86,31 @@ func NewApp() *App {
 	return app
 }
 
-func parseColors(envMap map[string]*gitcord.StatusColors) error {
-	for env, colors := range envMap {
-		if err := parseColorEnv(env+"_SUCCESS", &colors.Success); err != nil {
-			return err
-		}
-
-		if err := parseColorEnv(env+"_ERROR", &colors.Error); err != nil {
-			return err
-		}
-	}
-
-	return nil
+// colorEnvMap maps environment variable prefixes to their respective color
+// scheme key.
+var colorEnvMap = map[string]gitcord.ColorSchemeKey{
+	"GITCORD_COLOR_ISSUE_OPENED": gitcord.IssueOpened,
 }
 
+func parseEnvColors() (gitcord.ColorScheme, error) {
+	newScheme := gitcord.ColorScheme{}
+
+	for env, schemeKey := range colorEnvMap {
+		colors := gitcord.DefaultStatusColors
+		if err := parseColorEnv(env+"_SUCCESS", &colors.Success); err != nil {
+			return nil, err
+		}
+		if err := parseColorEnv(env+"_ERROR", &colors.Error); err != nil {
+			return nil, err
+		}
+		newScheme[schemeKey] = colors
+	}
+
+	return newScheme, nil
+}
+
+// parseColorEnv parses a color from an environment variable into dst. If the
+// environment variable is not set, then dst is not modified.
 func parseColorEnv(env string, dst *discord.Color) error {
 	val := os.Getenv(env)
 	if val == "" {

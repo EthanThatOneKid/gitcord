@@ -18,8 +18,9 @@ type Config struct {
 	// DiscordChannelID is the ID of the parent channel in which all threads
 	// will be created under
 	DiscordChannelID discord.ChannelID
-	DiscordGuildID   discord.GuildID
-	Colors           ColorSchemeConfig
+	// ColorScheme is the color scheme for use in embeds. Refer to ColorScheme
+	// for more information.
+	ColorScheme ColorScheme
 	// ForceOpen will force create a new thread for existing threads
 	ForceOpen bool
 	// Logger is the logger to use. If nil, the default logger will be used
@@ -36,49 +37,96 @@ var DefaultStatusColors = StatusColors{
 	Error:   0xFF0000,
 }
 
-type ColorSchemeConfig struct {
-	IssueOpened            StatusColors
-	IssueClosed            StatusColors
-	IssueReopened          StatusColors
-	IssueLabeled           StatusColors
-	IssueUnlabeled         StatusColors
-	IssueAssigned          StatusColors
-	IssueUnassigned        StatusColors
-	IssueMilestoned        StatusColors
-	IssueDemilestoned      StatusColors
-	IssueDeleted           StatusColors
-	IssueLocked            StatusColors
-	IssueUnlocked          StatusColors
-	IssueTransferred       StatusColors
-	IssueCommented         StatusColors
-	IssueCommentDeleted    StatusColors
-	PROpened               StatusColors
-	PRReopened             StatusColors
-	PRCommented            StatusColors
-	PRClosed               StatusColors
-	PRAssigned             StatusColors
-	PRUnassigned           StatusColors
-	PRDeleted              StatusColors
-	PRTransferred          StatusColors
-	PRLabeled              StatusColors
-	PRUnlabeled            StatusColors
-	PRMilestoned           StatusColors
-	PRDemilestoned         StatusColors
-	PRLocked               StatusColors
-	PRUnlocked             StatusColors
-	PRReviewRequested      StatusColors
-	PRReviewRequestRemoved StatusColors
-	PRReadyForReview       StatusColors
-	Reviewed               StatusColors
-	ReviewDismissed        StatusColors
-	ReviewCommented        StatusColors
-	ReviewCommentDeleted   StatusColors
-	ReviewThreaded         StatusColors
-	ReviewThreadResolved   StatusColors
-	ReviewThreadUnresolved StatusColors
+// ColorSchemeKey is the key for a color within a color scheme.
+type ColorSchemeKey uint
+
+const (
+	UnknownColorSchemeKey ColorSchemeKey = iota
+	IssueOpened
+	IssueClosed
+	IssueReopened
+	IssueLabeled
+	IssueUnlabeled
+	IssueAssigned
+	IssueUnassigned
+	IssueMilestoned
+	IssueDemilestoned
+	IssueDeleted
+	IssueLocked
+	IssueUnlocked
+	IssueTransferred
+	IssueCommented
+	IssueCommentDeleted
+	PROpened
+	PRReopened
+	PRCommented
+	PRClosed
+	PRAssigned
+	PRUnassigned
+	PRDeleted
+	PRTransferred
+	PRLabeled
+	PRUnlabeled
+	PRMilestoned
+	PRDemilestoned
+	PRLocked
+	PRUnlocked
+	PRReviewRequested
+	PRReviewRequestRemoved
+	PRReadyForReview
+	Reviewed
+	ReviewDismissed
+	ReviewCommented
+	ReviewCommentDeleted
+	ReviewThreaded
+	ReviewThreadResolved
+	ReviewThreadUnresolved
+
+	maxColorSchemeKey // internal use only
+)
+
+// ColorScheme describes the color scheme for all embed colors made by gitcord.
+// It maps each color scheme key to a status color struct, which has two
+// possible colors for two cases.
+//
+// By default, all color scheme keys ap to DefaultStatusColors.
+type ColorScheme map[ColorSchemeKey]StatusColors
+
+// DefaultColorScheme is the default color scheme.
+var DefaultColorScheme = ColorScheme{}
+
+func init() {
+	for i := 0; i < int(maxColorSchemeKey); i++ {
+		DefaultColorScheme[ColorSchemeKey(i)] = DefaultStatusColors
+	}
 }
 
-var DefaultColorScheme = ColorSchemeConfig{
-	IssueOpened: DefaultStatusColors,
-	PROpened:    DefaultStatusColors,
+// Override creates a new ColorScheme that overrides all color keys inside s
+// with the provided ones in with.
+func (s ColorScheme) Override(with ColorScheme) ColorScheme {
+	newScheme := make(ColorScheme, len(s))
+	for k, v := range s {
+		newScheme[k] = v
+	}
+
+	for k, v := range with {
+		newScheme[k] = v
+	}
+
+	return newScheme
+}
+
+// Color gets the color corresponding to the given key. If success is true, then
+// the Success color is used, else Error is used.
+func (s ColorScheme) Color(k ColorSchemeKey, success bool) discord.Color {
+	colors, ok := s[k]
+	if !ok {
+		colors = DefaultStatusColors
+	}
+
+	if success {
+		return colors.Success
+	} else {
+		return colors.Error
+	}
 }

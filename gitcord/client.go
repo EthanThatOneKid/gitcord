@@ -56,14 +56,13 @@ func wrapClient(c *client) *Client {
 func newClient(cfg Config) *client {
 	return &client{
 		github: githubclient.New(githubclient.Config{
-			GitHubOAuth: cfg.GitHubOAuth,
-			Logger:      cfg.Logger,
+			OAuth:  cfg.GitHubOAuth,
+			Logger: cfg.Logger,
 		}),
 		discord: discordclient.New(discordclient.Config{
-			DiscordToken:     cfg.DiscordToken,
-			DiscordGuildID:   cfg.DiscordGuildID,
-			DiscordChannelID: cfg.DiscordChannelID,
-			Logger:           cfg.Logger,
+			Token:     cfg.DiscordToken,
+			ChannelID: cfg.DiscordChannelID,
+			Logger:    cfg.Logger,
 		}),
 		logger: cfg.Logger,
 		config: cfg,
