@@ -58,11 +58,6 @@ func NewApp() *App {
 				return errors.Wrap(err, "failed to parse Discord guild ID")
 			}
 
-			eventID, err := strconv.ParseInt(ctx.Args().Get(0), 10, 64)
-			if err != nil {
-				return errors.Wrap(err, "failed to parse event ID")
-			}
-
 			config := gitcord.Config{
 				GitHubRepo: os.Getenv("GITHUB_REPO"),
 				GitHubOAuth: oauth2.StaticTokenSource(&oauth2.Token{
@@ -72,7 +67,6 @@ func NewApp() *App {
 				DiscordChannelID: discord.ChannelID(channelID),
 				DiscordGuildID:   discord.GuildID(guildID),
 				ForceOpen:        ctx.Bool("force"),
-				EventID:          eventID,
 				Logger:           log.Default(),
 			}
 
@@ -87,7 +81,12 @@ func NewApp() *App {
 			return nil
 		},
 		Action: func(ctx *cli.Context) error {
-			return app.client.DoEvent()
+			eventID, err := strconv.ParseInt(ctx.Args().Get(0), 10, 64)
+			if err != nil {
+				return errors.Wrap(err, "failed to parse event ID")
+			}
+
+			return app.client.DoEvent(eventID)
 		},
 	}
 

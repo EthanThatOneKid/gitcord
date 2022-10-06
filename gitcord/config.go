@@ -20,13 +20,8 @@ type Config struct {
 	DiscordChannelID discord.ChannelID
 	DiscordGuildID   discord.GuildID
 	Colors           ColorSchemeConfig
-
 	// ForceOpen will force create a new thread for existing threads
 	ForceOpen bool
-
-	// EventID is the ID of the event that is being processed
-	EventID int64
-
 	// Logger is the logger to use. If nil, the default logger will be used
 	Logger *log.Logger
 }
