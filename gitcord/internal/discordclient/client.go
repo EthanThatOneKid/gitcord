@@ -7,6 +7,8 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/ethanthatonekid/gitcord/gitcord/internal/slices"
+	"github.com/pkg/errors"
 )
 
 // Client is a wrapped Discord client.
@@ -15,27 +17,31 @@ type Client struct {
 	config Config
 }
 
+// Config is the configuration for the Discord client.
 type Config struct {
-	DiscordToken      string
-	DiscordGuildID    discord.GuildID
-	DiscordChannelID  discord.ChannelID
+	Token             string
+	ChannelID         discord.ChannelID
 	ForceCreateThread bool
-	Logger            *log.Logger
+	// Logger is optional. By default, it will log to the standard logger.
+	Logger *log.Logger
 }
 
+// New creates a new Discord client.
 func New(cfg Config) *Client {
+	if cfg.Logger == nil {
+		cfg.Logger = log.Default()
+	}
+
 	return &Client{
-		Client: api.NewClient(cfg.DiscordToken),
+		Client: api.NewClient(cfg.Token),
 		config: cfg,
 	}
 }
 
 func (c *Client) logln(v ...any) {
-	if c.config.Logger != nil {
-		prefixed := []any{"discord:"}
-		prefixed = append(prefixed, v...)
-		c.config.Logger.Println(prefixed...)
-	}
+	prefixed := []any{"discord:"}
+	prefixed = append(prefixed, v...)
+	c.config.Logger.Println(prefixed...)
 }
 
 func (c *Client) WithContext(ctx context.Context) *Client {
@@ -45,25 +51,34 @@ func (c *Client) WithContext(ctx context.Context) *Client {
 	}
 }
 
+func (c *Client) guildID() (discord.GuildID, error) {
+	ch, err := c.Channel(c.config.ChannelID)
+	if err != nil {
+		return 0, errors.Wrapf(err, "failed to get channel %d for guild ID", c.config.ChannelID)
+	}
+	return ch.GuildID, nil
+}
+
 func (c *Client) activeThreads() ([]discord.Channel, error) {
-	active, err := c.Client.ActiveThreads(c.config.DiscordGuildID)
+	guildID, err := c.guildID()
 	if err != nil {
 		return nil, err
 	}
 
-	relevantThreads := active.Threads[:0]
-	for _, thread := range active.Threads {
-		if thread.ParentID == c.config.DiscordChannelID {
-			relevantThreads = append(relevantThreads, thread)
-		}
+	active, err := c.Client.ActiveThreads(guildID)
+	if err != nil {
+		return nil, err
 	}
 
-	return relevantThreads, nil
+	// Filter for relevant threads only.
+	relevant := slices.FilterReuse(active.Threads, func(ch *discord.Channel) bool {
+		return ch.ParentID == c.config.ChannelID
+	})
+	return relevant, nil
 }
 
 func (c *Client) FindThreadByNumber(id int) *discord.Channel {
 	chs, err := c.activeThreads()
-
 	if err != nil {
 		c.logln("failed to load channels:", err)
 		return nil
@@ -73,12 +88,7 @@ func (c *Client) FindThreadByNumber(id int) *discord.Channel {
 }
 
 func findChannel(channels []discord.Channel, f func(ch *discord.Channel) bool) *discord.Channel {
-	for i := range channels {
-		if f(&channels[i]) {
-			return &channels[i]
-		}
-	}
-	return nil
+	return slices.Find(channels, f)
 }
 
 func findChannelByIssue(channels []discord.Channel, targetID int) *discord.Channel {

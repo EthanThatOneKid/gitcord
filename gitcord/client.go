@@ -2,6 +2,7 @@ package gitcord
 
 import (
 	"context"
+	"log"
 
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/githubclient"
@@ -9,55 +10,64 @@ import (
 	"github.com/google/go-github/v47/github"
 )
 
-// client for the GitHub Discord bot
 type client struct {
 	github  *githubclient.Client
 	discord *discordclient.Client
+	logger  *log.Logger
 	config  Config
 }
 
+// Client is the GitHub-Discord bot.
 type Client struct {
-	Issues         IssuesClient
-	Comments       IssueCommentClient
-	PRs            PRsClient
-	Reviews        ReviewsClient
-	ReviewComments ReviewCommentsClient
-	ReviewThreads  ReviewThreadsClient
+	Issues         *IssuesClient
+	Comments       *IssueCommentClient
+	PRs            *PRsClient
+	Reviews        *ReviewsClient
+	ReviewComments *ReviewCommentsClient
+	ReviewThreads  *ReviewThreadsClient
 
 	client *client
 }
 
+// WithContext returns a new Client with the given context.
 func (c *Client) WithContext(ctx context.Context) *Client {
-	cpy := *c
-	cpy.client = cpy.client.WithContext(ctx)
-	return &cpy
+	return wrapClient(c.client.WithContext(ctx))
 }
 
+// NewClient creates a new Client instance.
 func NewClient(cfg Config) *Client {
-	return &Client{client: newClient(cfg)}
+	return wrapClient(newClient(cfg))
+}
+
+// wrapClient wraps the internal client
+func wrapClient(c *client) *Client {
+	return &Client{
+		Issues:         (*IssuesClient)(c),
+		Comments:       (*IssueCommentClient)(c),
+		PRs:            (*PRsClient)(c),
+		Reviews:        (*ReviewsClient)(c),
+		ReviewComments: (*ReviewCommentsClient)(c),
+		ReviewThreads:  (*ReviewThreadsClient)(c),
+
+		client: c,
+	}
 }
 
 func newClient(cfg Config) *client {
 	return &client{
 		github: githubclient.New(githubclient.Config{
-			GitHubOAuth: cfg.GitHubOAuth,
-			Logger:      cfg.Logger,
+			OAuth:  cfg.GitHubOAuth,
+			Logger: cfg.Logger,
 		}),
 		discord: discordclient.New(discordclient.Config{
-			DiscordToken:     cfg.DiscordToken,
-			DiscordGuildID:   cfg.DiscordGuildID,
-			DiscordChannelID: cfg.DiscordChannelID,
-			Logger:           cfg.Logger,
+			Token:     cfg.DiscordToken,
+			ChannelID: cfg.DiscordChannelID,
+			Logger:    cfg.Logger,
 		}),
+		logger: cfg.Logger,
 		config: cfg,
 	}
 }
-
-// func (c client) logln(v ...any) {
-// 	if c.config.Logger != nil {
-// 		c.config.Logger.Println(v...)
-// 	}
-// }
 
 func (c *client) WithContext(ctx context.Context) *client {
 	return &client{
@@ -67,11 +77,11 @@ func (c *client) WithContext(ctx context.Context) *client {
 	}
 }
 
-// DoEvent handles a GitHub event
+// DoEvent handles a GitHub event.
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
-func (c *Client) DoEvent() error {
-	ev, err := c.client.github.FindEvent(c.client.config.EventID)
+func (c *Client) DoEvent(id int64) error {
+	ev, err := c.client.github.FindEvent(id)
 	if err != nil {
 		return err
 	}

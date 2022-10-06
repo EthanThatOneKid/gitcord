@@ -24,15 +24,15 @@ func (c *Client) WithContext(ctx context.Context) *Client {
 }
 
 type Config struct {
-	GitHubOAuth oauth2.TokenSource
-	GitHubRepo  string
-	Logger      *log.Logger
+	OAuth  oauth2.TokenSource
+	Repo   string
+	Logger *log.Logger // default log.Default()
 }
 
 // SplitGitHubRepo splits the GitHub repository path into its owner and name.
 func (c *Config) SplitGitHubRepo() (owner, repo string) {
 	var ok bool
-	owner, repo, ok = strings.Cut(c.GitHubRepo, "/")
+	owner, repo, ok = strings.Cut(c.Repo, "/")
 	if !ok {
 		panic("invalid GitHubRepo, must be in owner/repo form")
 	}
@@ -40,18 +40,20 @@ func (c *Config) SplitGitHubRepo() (owner, repo string) {
 }
 
 func New(cfg Config) *Client {
+	if cfg.Logger == nil {
+		cfg.Logger = log.Default()
+	}
+
 	return &Client{
-		Client: github.NewClient(oauth2.NewClient(context.Background(), cfg.GitHubOAuth)),
+		Client: github.NewClient(oauth2.NewClient(context.Background(), cfg.OAuth)),
 		config: cfg,
 	}
 }
 
 func (c *Client) logln(v ...any) {
-	if c.config.Logger != nil {
-		prefixed := []any{"github:"}
-		prefixed = append(prefixed, v...)
-		c.config.Logger.Println(prefixed...)
-	}
+	prefixed := []any{"github:"}
+	prefixed = append(prefixed, v...)
+	c.config.Logger.Println(prefixed...)
 }
 
 func (c *Client) FindEvent(eventID int64) (*github.Event, error) {
