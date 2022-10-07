@@ -54,7 +54,7 @@ func (c *Client) WithContext(ctx context.Context) *Client {
 func (c *Client) guildID() (discord.GuildID, error) {
 	ch, err := c.Channel(c.config.ChannelID)
 	if err != nil {
-		return 0, errors.Wrapf(err, "failed to get channel %d for guild ID", c.config.ChannelID)
+		return 0, errors.Wrapf(err, "failed to get guild ID for channel %d", c.config.ChannelID)
 	}
 	return ch.GuildID, nil
 }
@@ -84,14 +84,14 @@ func (c *Client) FindThreadByNumber(id int) *discord.Channel {
 		return nil
 	}
 
-	return findChannelByIssue(chs, id)
+	return findChannelByNumber(chs, id)
 }
 
 func findChannel(channels []discord.Channel, f func(ch *discord.Channel) bool) *discord.Channel {
 	return slices.Find(channels, f)
 }
 
-func findChannelByIssue(channels []discord.Channel, targetID int) *discord.Channel {
+func findChannelByNumber(channels []discord.Channel, targetID int) *discord.Channel {
 	return findChannel(channels, func(ch *discord.Channel) bool {
 		var n int
 		_, err := fmt.Scanf("#%d", &n)

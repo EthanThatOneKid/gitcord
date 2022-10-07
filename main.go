@@ -63,7 +63,7 @@ func NewApp() *App {
 				GitHubOAuth: oauth2.StaticTokenSource(&oauth2.Token{
 					AccessToken: os.Getenv("GITHUB_TOKEN"),
 				}),
-				DiscordToken:     os.Getenv("DISCORD_TOKEN"),
+				DiscordToken:     "Bot " + os.Getenv("DISCORD_TOKEN"),
 				DiscordChannelID: discord.ChannelID(channelID),
 				ColorScheme:      colors,
 				ForceOpen:        ctx.Bool("force"),

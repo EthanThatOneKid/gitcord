@@ -57,6 +57,7 @@ func newClient(cfg Config) *client {
 	return &client{
 		github: githubclient.New(githubclient.Config{
 			OAuth:  cfg.GitHubOAuth,
+			Repo:   cfg.GitHubRepo,
 			Logger: cfg.Logger,
 		}),
 		discord: discordclient.New(discordclient.Config{
@@ -81,7 +82,7 @@ func (c *client) WithContext(ctx context.Context) *client {
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
 func (c *Client) DoEvent(id int64) error {
-	ev, err := c.client.github.FindEvent(id)
+	ev, err := c.client.github.EventByID(id)
 	if err != nil {
 		return err
 	}

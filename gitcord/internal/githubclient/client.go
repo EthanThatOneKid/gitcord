@@ -56,22 +56,36 @@ func (c *Client) logln(v ...any) {
 	c.config.Logger.Println(prefixed...)
 }
 
-func (c *Client) FindEvent(eventID int64) (*github.Event, error) {
+func (c *Client) EventByID(eventID int64) (*github.Event, error) {
 	owner, repo := c.config.SplitGitHubRepo()
-
-	evs, resp, err := c.Activity.ListRepositoryEvents(c.ctx, owner, repo, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	c.logln("found", len(evs), "events, last page:", resp.LastPage)
-
 	eventIDStr := fmt.Sprintf("%d", eventID)
-	for _, ev := range evs {
-		if ev.GetID() == eventIDStr {
-			return ev, nil
+
+	var err error
+	var resp *github.Response
+	var evs []*github.Event // TODO: make([]*github.Event, 100)
+	var nextPage int
+
+	for {
+		evs, resp, err = c.Activity.ListRepositoryEvents(c.ctx, owner, repo, &github.ListOptions{
+			Page:    nextPage,
+			PerPage: 3,
+		})
+		if err != nil {
+			return nil, err
 		}
+
+		for _, ev := range evs {
+			if ev.GetID() == eventIDStr {
+				return ev, nil
+			}
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		nextPage = resp.NextPage
 	}
 
-	return nil, fmt.Errorf("event %d not found", eventID)
+	return nil, fmt.Errorf("failed to get event %d", eventID)
 }
