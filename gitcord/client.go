@@ -78,15 +78,20 @@ func (c *client) WithContext(ctx context.Context) *client {
 	}
 }
 
-// DoEvent handles a GitHub event.
+// DoEventID handles a GitHub event by ID.
 //
 // https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
-func (c *Client) DoEvent(id int64) error {
+func (c *Client) DoEventID(id int64) error {
 	ev, err := c.client.github.EventByID(id)
 	if err != nil {
 		return err
 	}
 
+	return c.DoEvent(ev)
+}
+
+// DoEvent handles a GitHub event.
+func (c *Client) DoEvent(ev *github.Event) error {
 	data, err := ev.ParsePayload()
 	if err != nil {
 		return err

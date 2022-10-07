@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/ethanthatonekid/gitcord/gitcord"
+	"github.com/google/go-github/v47/github"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -74,12 +76,12 @@ func NewApp() *App {
 			return nil
 		},
 		Action: func(ctx *cli.Context) error {
-			eventID, err := strconv.ParseInt(ctx.Args().Get(0), 10, 64)
-			if err != nil {
-				return errors.Wrap(err, "failed to parse event ID")
+			var event *github.Event
+			if err := json.NewDecoder(os.Stdin).Decode(&event); err != nil {
+				return errors.Wrap(err, "failed to decode GitHub event from stdin")
 			}
 
-			return app.client.DoEvent(eventID)
+			return app.client.DoEvent(event)
 		},
 	}
 

@@ -62,7 +62,7 @@ func (c *Client) EventByID(eventID int64) (*github.Event, error) {
 
 	var err error
 	var resp *github.Response
-	var evs []*github.Event // TODO: make([]*github.Event, 100)
+	var evs []*github.Event
 	var nextPage int
 
 	for {

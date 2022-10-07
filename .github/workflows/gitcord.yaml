@@ -11,8 +11,8 @@ on:
     types: [submitted, edited, dismissed]
   pull_request_review_comment:
     types: [created, edited, deleted]
-  pull_request_review_thread:
-    types: [created, updated, resolved, unresolved]
+  # pull_request_review_thread:
+  #   types: [created, updated, resolved, unresolved]
 
 jobs:
   gitcord:

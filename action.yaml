@@ -13,10 +13,11 @@ runs:
         uses: actions/setup-go@v3
       
       - name: Gitcord
-        run: go run . ${{ github.event_name }} ${{ github.event.action }}
+        run: echo "$GITHUB_EVENT_PAYLOAD" | go run .
         env:
           GITHUB_REPO: github.repository.name
           GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_OAUTH_TOKEN }}
+          GITHUB_EVENT_PAYLOAD: ${{ github.event }}
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
           
