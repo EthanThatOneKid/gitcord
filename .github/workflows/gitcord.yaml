@@ -18,7 +18,7 @@ jobs:
   gitcord:
     runs-on: ubuntu-latest
     steps:
-      - uses: .
+      - uses: ./
         env:
           GITHUB_REPO: ${{ github.event.repository.name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
