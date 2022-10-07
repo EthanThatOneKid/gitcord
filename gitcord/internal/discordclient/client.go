@@ -19,9 +19,8 @@ type Client struct {
 
 // Config is the configuration for the Discord client.
 type Config struct {
-	Token             string
-	ChannelID         discord.ChannelID
-	ForceCreateThread bool
+	Token     string
+	ChannelID discord.ChannelID
 	// Logger is optional. By default, it will log to the standard logger.
 	Logger *log.Logger
 }
@@ -80,21 +79,16 @@ func (c *Client) activeThreads() ([]discord.Channel, error) {
 func (c *Client) FindThreadByNumber(id int) *discord.Channel {
 	chs, err := c.activeThreads()
 	if err != nil {
-		c.logln("failed to load channels:", err)
 		return nil
 	}
 
 	return findChannelByNumber(chs, id)
 }
 
-func findChannel(channels []discord.Channel, f func(ch *discord.Channel) bool) *discord.Channel {
-	return slices.Find(channels, f)
-}
-
 func findChannelByNumber(channels []discord.Channel, targetID int) *discord.Channel {
-	return findChannel(channels, func(ch *discord.Channel) bool {
+	return slices.Find(channels, func(ch *discord.Channel) bool {
 		var n int
-		_, err := fmt.Scanf("#%d", &n)
+		_, err := fmt.Sscanf(ch.Name, "%d", &n)
 		return err == nil && n == targetID
 	})
 }
@@ -124,7 +118,7 @@ func (c *Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Messa
 			return false
 		}
 
-		_, err := fmt.Sscanf(msg.Embeds[0].Title, "#%d", &id)
+		_, err := fmt.Sscanf(msg.Embeds[0].Title, "%d", &id)
 		if err != nil {
 			return false
 		}

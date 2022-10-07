@@ -22,21 +22,14 @@ func (c *PRsClient) OpenAndEmbedInitialMsg(ev *github.PullRequestEvent) error {
 
 	t := c.discord.FindThreadByNumber(pr.GetNumber())
 	if t != nil {
-		if t.Type != discord.GuildPublicThread {
-			if !c.config.ForceOpen {
-				return fmt.Errorf("channel %d is not a public thread", t.ID)
-			}
-			c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", t.ID))
-		}
-
 		if !c.config.ForceOpen {
 			return fmt.Errorf("pull request %d already has a thread %d", pr.GetNumber(), t.ID)
 		}
-		// c.logln(fmt.Sprintf("ignoring existing thread %d", ch.ID))
+		c.logln(fmt.Sprintf("ignoring existing thread %d", t.ID))
 	}
 
 	t, err := c.discord.StartThreadWithoutMessage(c.config.DiscordChannelID, api.StartThreadData{
-		Name:                fmt.Sprintf("#%d: %s", pr.GetNumber(), pr.GetTitle()),
+		Name:                fmt.Sprintf("%d: %s", pr.GetNumber(), pr.GetTitle()),
 		Type:                discord.GuildPublicThread,
 		AutoArchiveDuration: discord.SevenDaysArchive,
 	})

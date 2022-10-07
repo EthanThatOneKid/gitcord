@@ -22,21 +22,15 @@ func (c *IssuesClient) OpenAndEmbedInitialMsg(ev *github.IssuesEvent) error {
 
 	t := c.discord.FindThreadByNumber(issue.GetNumber())
 	if t != nil {
-		if t.Type != discord.GuildPublicThread {
-			if !c.config.ForceOpen {
-				return fmt.Errorf("channel %d is not a public thread", t.ID)
-			}
-			c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", t.ID))
-		}
-
 		if !c.config.ForceOpen {
+			c.logln("issue", issue.GetNumber(), "already has a thread")
 			return fmt.Errorf("issue %d already has a thread %d", issue.GetNumber(), t.ID)
 		}
 		c.logln(fmt.Sprintf("ignoring existing thread %d", t.ID))
 	}
 
 	t, err := c.discord.StartThreadWithoutMessage(c.config.DiscordChannelID, api.StartThreadData{
-		Name:                fmt.Sprintf("#%d: %s", issue.GetNumber(), issue.GetTitle()),
+		Name:                fmt.Sprintf("%d: %s", issue.GetNumber(), issue.GetTitle()),
 		Type:                discord.GuildPublicThread,
 		AutoArchiveDuration: discord.SevenDaysArchive,
 	})

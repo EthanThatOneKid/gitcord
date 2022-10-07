@@ -76,12 +76,22 @@ func NewApp() *App {
 			return nil
 		},
 		Action: func(ctx *cli.Context) error {
-			var event *github.Event
-			if err := json.NewDecoder(os.Stdin).Decode(&event); err != nil {
-				return errors.Wrap(err, "failed to decode GitHub event from stdin")
-			}
+			eventIDStr := ctx.Args().First()
+			switch eventIDStr {
+			case "":
+				var event *github.Event
+				if err := json.NewDecoder(os.Stdin).Decode(&event); err != nil {
+					return errors.Wrap(err, "failed to decode GitHub event from stdin")
+				}
+				return app.client.DoEvent(event)
 
-			return app.client.DoEvent(event)
+			default:
+				eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
+				if err != nil {
+					return errors.Wrap(err, "failed to parse GitHub event ID")
+				}
+				return app.client.DoEventID(eventID)
+			}
 		},
 	}
 

@@ -21,7 +21,7 @@ type Config struct {
 	// ColorScheme is the color scheme for use in embeds. Refer to ColorScheme
 	// for more information.
 	ColorScheme ColorScheme
-	// ForceOpen will force create a new thread for existing threads
+	// ForceOpen will force create a new thread even if one already exists
 	ForceOpen bool
 	// Logger is the logger to use. If nil, the default logger will be used
 	Logger *log.Logger
