@@ -11,6 +11,12 @@ import (
 
 type IssuesClient client
 
+func (c *IssuesClient) logln(v ...any) {
+	prefixed := []any{"Issues:"}
+	prefixed = append(prefixed, v...)
+	c.config.Logger.Println(prefixed...)
+}
+
 func (c *IssuesClient) OpenAndEmbedInitialMsg(ev *github.IssuesEvent) error {
 	issue := ev.GetIssue()
 
@@ -20,13 +26,13 @@ func (c *IssuesClient) OpenAndEmbedInitialMsg(ev *github.IssuesEvent) error {
 			if !c.config.ForceOpen {
 				return fmt.Errorf("channel %d is not a public thread", t.ID)
 			}
-			// c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", ch.ID))
+			c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", t.ID))
 		}
 
 		if !c.config.ForceOpen {
 			return fmt.Errorf("issue %d already has a thread %d", issue.GetNumber(), t.ID)
 		}
-		// c.logln(fmt.Sprintf("ignoring existing thread %d", ch.ID))
+		c.logln(fmt.Sprintf("ignoring existing thread %d", t.ID))
 	}
 
 	t, err := c.discord.StartThreadWithoutMessage(c.config.DiscordChannelID, api.StartThreadData{

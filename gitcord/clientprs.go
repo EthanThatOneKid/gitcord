@@ -11,6 +11,12 @@ import (
 
 type PRsClient client
 
+func (c *PRsClient) logln(v ...any) {
+	prefixed := []any{"PRs:"}
+	prefixed = append(prefixed, v...)
+	c.config.Logger.Println(prefixed...)
+}
+
 func (c *PRsClient) OpenAndEmbedInitialMsg(ev *github.PullRequestEvent) error {
 	pr := ev.GetPullRequest()
 
@@ -20,7 +26,7 @@ func (c *PRsClient) OpenAndEmbedInitialMsg(ev *github.PullRequestEvent) error {
 			if !c.config.ForceOpen {
 				return fmt.Errorf("channel %d is not a public thread", t.ID)
 			}
-			// c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", ch.ID))
+			c.logln(fmt.Sprintf("ignoring channel %d is not a public thread", t.ID))
 		}
 
 		if !c.config.ForceOpen {
