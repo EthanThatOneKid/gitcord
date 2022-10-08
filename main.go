@@ -45,11 +45,10 @@ func NewApp() *App {
 			&cli.BoolFlag{
 				Name:    "force",
 				Aliases: []string{"f"},
-				Value:   false,
 				Usage:   "force open threads",
 			},
 		},
-		Before: func(ctx *cli.Context) error {
+		Action: func(ctx *cli.Context) error {
 			channelID, err := discord.ParseSnowflake(os.Getenv("DISCORD_CHANNEL_ID"))
 			if err != nil {
 				return errors.Wrap(err, "failed to parse Discord channel ID")
@@ -73,9 +72,7 @@ func NewApp() *App {
 			}
 
 			app.client = gitcord.NewClient(config).WithContext(ctx.Context)
-			return nil
-		},
-		Action: func(ctx *cli.Context) error {
+
 			eventIDStr := ctx.Args().First()
 			switch eventIDStr {
 			case "":
