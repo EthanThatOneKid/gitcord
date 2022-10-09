@@ -50,12 +50,6 @@ func New(cfg Config) *Client {
 	}
 }
 
-func (c *Client) logln(v ...any) {
-	prefixed := []any{"github:"}
-	prefixed = append(prefixed, v...)
-	c.config.Logger.Println(prefixed...)
-}
-
 func (c *Client) EventByID(eventID int64) (*github.Event, error) {
 	owner, repo := c.config.SplitGitHubRepo()
 	eventIDStr := fmt.Sprintf("%d", eventID)
@@ -68,7 +62,7 @@ func (c *Client) EventByID(eventID int64) (*github.Event, error) {
 	for {
 		evs, resp, err = c.Activity.ListRepositoryEvents(c.ctx, owner, repo, &github.ListOptions{
 			Page:    nextPage,
-			PerPage: 3,
+			PerPage: 100,
 		})
 		if err != nil {
 			return nil, err
