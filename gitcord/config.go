@@ -11,8 +11,6 @@ import (
 type Config struct {
 	// GitHubOAuth is the GitHub OAuth token
 	GitHubOAuth oauth2.TokenSource
-	// GitHubRepo is the owner and name of the repository, formatted as: <owner>/<name>
-	GitHubRepo string
 	// DiscordToken is the Discord bot token
 	DiscordToken string
 	// DiscordChannelID is the ID of the parent channel in which all threads

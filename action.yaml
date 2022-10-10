@@ -3,20 +3,6 @@
 name: "Gitcord"
 description: "expand GitHub into Discord"
 
-inputs:
-  GITHUB_REPO:
-    description: "GITHUB_REPO used by gitcord"
-    required: true
-  GITHUB_TOKEN:
-    description: "GITHUB_TOKEN used by gitcord"
-    required: true
-  DISCORD_CHANNEL_ID:
-    description: "DISCORD_CHANNEL_ID used by gitcord"
-    required: true
-  DISCORD_TOKEN:
-    description: "DISCORD_TOKEN used by gitcord"
-    required: true
-
 runs:
   using: "composite"
   steps:
@@ -29,9 +15,5 @@ runs:
       shell: bash
       run: |
         go install github.com/ethanthatonekid/gitcord@latest
+        echo "Yo!: $GITHUB_EVENT_PAYLOAD"
         echo "$GITHUB_EVENT_PAYLOAD" | gitcord
-      env:
-        GITHUB_REPO: "${{ inputs.GITHUB_REPO }}"
-        GITHUB_TOKEN: "${{ inputs.GITHUB_TOKEN }}"
-        DISCORD_CHANNEL_ID: "${{ inputs.DISCORD_CHANNEL_ID }}"
-        DISCORD_TOKEN: "${{ inputs.DISCORD_TOKEN }}"
