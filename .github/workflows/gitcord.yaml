@@ -55,6 +55,6 @@ jobs:
         uses: ethanthatonekid/gitcord@v1-beta
         with:
           GITHUB_REPO: "${{ github.event.repository.name }}"
-          DISCORD_CHANNEL_ID: "${{ secrets.DISCORD_CHANEL_ID }}"
+          DISCORD_CHANNEL_ID: "${{ secrets.DISCORD_CHANNEL_ID }}"
           DISCORD_TOKEN: "${{ secrets.DISCORD_TOKEN }}"
           GITHUB_TOKEN: "${{ secrets._GITHUB_TOKEN }}" # Repo secrets cannot begin with "GITHUB_".
