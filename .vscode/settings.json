@@ -1,5 +1,0 @@
-{
-    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
-    "editor.formatOnSave": true,
-    "defaultFormatter": "esbenp.prettier-vscode",
-}
