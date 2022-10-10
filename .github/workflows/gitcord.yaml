@@ -51,6 +51,8 @@ jobs:
   gitcord:
     runs-on: ubuntu-latest
     steps:
+      - run: cat $GITHUB_EVENT_PATH
+
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.event.repository.name }})"
         uses: ethanthatonekid/gitcord@v1-beta
         with:
