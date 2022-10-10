@@ -53,6 +53,10 @@ jobs:
     steps:
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.event.repository.name }})"
         uses: ethanthatonekid/gitcord@v1-beta
-        secrets: inherit
+        with:
+          GITHUB_REPO: "${{ github.event.repository.name }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          DISCORD_CHANNEL_ID: "${{ secrets.DISCORD_CHANEL_ID }}"
+          DISCORD_TOKEN: "${{ secrets.DISCORD_TOKEN }}"
         # env:
         #   GITHUB_REPO: ${{ github.event.repository.name }}
