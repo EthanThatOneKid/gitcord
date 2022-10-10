@@ -5,7 +5,7 @@ description: "expand GitHub into Discord"
 
 inputs:
   PAYLOAD:
-    description: "GitHub event payload passed into gitcord stdin"
+    description: "GitHub event payload passed into Gitcord stdin"
     required: true
 
 runs:
