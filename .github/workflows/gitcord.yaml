@@ -53,6 +53,8 @@ jobs:
     steps:
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.event.repository.name }})"
         uses: ethanthatonekid/gitcord@v1-beta
+        with:
+          GITHUB_EVENT_PAYLOAD: "${{ $GITHUB_EVENT_PAYLOAD }}"
         env:
           GITHUB_TOKEN: "${{ github.TOKEN }}"
           DISCORD_TOKEN: "${{ secrets.DISCORD_TOKEN }}"

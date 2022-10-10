@@ -3,6 +3,11 @@
 name: "Gitcord"
 description: "expand GitHub into Discord"
 
+inputs:
+  GITHUB_EVENT_PAYLOAD:
+    description: "GITHUB_EVENT_PAYLOAD expected in stdin by gitcord"
+    default: ${{ $GITHUB_EVENT_PAYLOAD }}
+
 runs:
   using: "composite"
   steps:
@@ -15,5 +20,5 @@ runs:
       shell: bash
       run: |
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "Yo!: $GITHUB_EVENT_PAYLOAD"
-        echo "$GITHUB_EVENT_PAYLOAD" | gitcord
+        echo "Yo!: ${{ $GITHUB_EVENT_PAYLOAD }}"
+        echo "${{ $GITHUB_EVENT_PAYLOAD }}" | gitcord
