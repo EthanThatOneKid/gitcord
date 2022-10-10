@@ -1,23 +1,22 @@
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runstepsif
 
-name: 'Gitcord'
-description: 'Open the floor on Discord.'
-
-inputs:
-  # all inputs are passed via env
+name: "Gitcord"
+description: "expand GitHub into Discord"
 
 runs:
   using: "composite"
   steps:
-      - name: Setup Go
-        uses: actions/setup-go@v3
-      
-      - name: Gitcord
-        run: echo "$GITHUB_EVENT_PAYLOAD" | go run .
-        env:
-          GITHUB_REPO: github.repository.name
-          GITHUB_EVENT_PAYLOAD: ${{ github.event }}
-          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_OAUTH_TOKEN }}
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-          
+    - name: Setup Go
+      uses: actions/setup-go@v3
+
+    - name: Gitcord
+      shell: bash
+      run: |
+        go install github.com/ethanthatonekid/gitcord
+        echo "$GITHUB_EVENT_PAYLOAD" | gitcord
+      env:
+        GITHUB_REPO: "${{ github.event.repository.name }}"
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        DISCORD_CHANNEL_ID: "${{ secrets.DISCORD_CHANEL_ID }}"
+        DISCORD_GUILD_ID: "${{ secrets.DISCORD_GUILD_ID }}"
+        DISCORD_TOKEN: "${{ secrets.DISCORD_TOKEN }}"
