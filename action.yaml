@@ -26,7 +26,7 @@ runs:
     - name: Gitcord
       shell: bash
       run: |
-        go install github.com/ethanthatonekid/gitcord
+        go install github.com/ethanthatonekid/gitcord@latest
         echo "$GITHUB_EVENT_PAYLOAD" | gitcord
       env:
         GITHUB_REPO: "${{ inputs.GITHUB_REPO }}"
