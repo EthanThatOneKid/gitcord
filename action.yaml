@@ -22,6 +22,8 @@ runs:
   steps:
     - name: Setup Go
       uses: actions/setup-go@v3
+      with:
+        go-version: "1.19"
 
     - name: Gitcord
       shell: bash
