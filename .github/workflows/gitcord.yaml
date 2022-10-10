@@ -57,4 +57,4 @@ jobs:
           GITHUB_REPO: "${{ github.event.repository.name }}"
           DISCORD_CHANNEL_ID: "${{ secrets.DISCORD_CHANNEL_ID }}"
           DISCORD_TOKEN: "${{ secrets.DISCORD_TOKEN }}"
-          GITHUB_TOKEN: "${{ secrets._GITHUB_TOKEN }}" # Repo secrets cannot begin with "GITHUB_".
+          GITHUB_TOKEN: "${{ $GITHUB_TOKEN }}"
