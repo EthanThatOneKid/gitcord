@@ -33,5 +33,5 @@ runs:
       env:
         GITHUB_REPO: "${{ inputs.GITHUB_REPO }}"
         GITHUB_TOKEN: "${{ inputs.GITHUB_TOKEN }}"
-        DISCORD_CHANNEL_ID: "${{ inputs.DISCORD_CHANEL_ID }}"
+        DISCORD_CHANNEL_ID: "${{ inputs.DISCORD_CHANNEL_ID }}"
         DISCORD_TOKEN: "${{ inputs.DISCORD_TOKEN }}"
