@@ -72,7 +72,7 @@ func NewApp() *App {
 			switch eventIDStr {
 			case "":
 				var event *github.Event
-				if err := json.NewDecoder(os.Stdin).Decode(&event); err != nil {
+				if err := json.NewDecoder(os.Stdin).Decode(&event); event == nil || err != nil {
 					return errors.Wrap(err, "failed to decode GitHub event from stdin")
 				}
 				return app.client.DoEvent(event)

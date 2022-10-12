@@ -54,12 +54,12 @@ jobs:
       - name: Read GitHub event payload
         id: event_payload
         run: |
-          echo "::set-output name=payload::$(cat GITHUB_EVENT_PATH)"
+          echo ::set-output name=payload::$(cat $GITHUB_EVENT_PATH)
 
-      - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.event.repository.name }})"
+      - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.repository }})"
         uses: ethanthatonekid/gitcord@v1-beta
         with:
-          payload: ${{ steps.event_payload.outputs.payload }}
+          github-event-payload: ${{ steps.event_payload.outputs.payload }}
           github-token: ${{ github.token }}
           discord-token: ${{ secrets.DISCORD_TOKEN }}
           discord-channel-id: ${{ secrets.DISCORD_CHANNEL_ID }}
