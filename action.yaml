@@ -29,7 +29,7 @@ runs:
       shell: bash
       run: |
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "${{ inputs.payload }}" | gitcord
+        echo "${{ toJSON(fromJSON(inputs.payload)) }}" | gitcord
       env:
         GITHUB_TOKEN: "${{ inputs.github-token }}"
         DISCORD_TOKEN: "${{ inputs.discord-token }}"
