@@ -54,7 +54,7 @@ jobs:
       - name: Read GitHub event payload
         id: event_payload
         run: |
-          echo ::set-output name=payload::${{ toJSON($(cat $GITHUB_EVENT_PATH)) }}
+          echo ::set-output name=payload::$(cat $GITHUB_EVENT_PATH)
 
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.repository }})"
         uses: ethanthatonekid/gitcord@v1-beta
