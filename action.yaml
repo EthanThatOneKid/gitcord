@@ -20,11 +20,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Validate GitHub event payload
-      id: event_payload
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: "1.19"
 
-      # See:
-      # https://github.com/mkungla/actions-set-text-output/blob/414dd008c8ad6a77fb0fe56e62076111ca59132b/action.yml
+    # See:
+    # https://github.com/mkungla/actions-set-text-output/blob/414dd008c8ad6a77fb0fe56e62076111ca59132b/action.yml
+    - name: Gitcord
       shell: bash
       env:
         event_payload: ${{ inputs.payload }}
@@ -32,18 +35,9 @@ runs:
         event_payload="${event_payload//'%'/'%25'}"
         event_payload="${event_payload//$'\n'/'%0A'}"
         event_payload="${event_payload//$'\r'/'%0D'}"
-        echo "::set-output name=payload::$event_payload"
 
-    - name: Setup Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: "1.19"
-
-    - name: Gitcord
-      shell: bash
-      run: |
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "${{ steps.event_payload.outputs.payload }}" | gitcord
+        echo "${{ $event_payload }}" | gitcord
       env:
         GITHUB_TOKEN: "${{ inputs.github-token }}"
         DISCORD_TOKEN: "${{ inputs.discord-token }}"
