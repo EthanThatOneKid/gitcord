@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "::set-output name=payload::$(cat GITHUB_EVENT_PATH)"
 
-      - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.event.repository.name }})"
+      - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ GITHUB_REPOSITORY }})"
         uses: ethanthatonekid/gitcord@v1-beta
         with:
           payload: ${{ steps.event_payload.outputs.payload }}
