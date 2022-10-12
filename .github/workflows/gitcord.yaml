@@ -55,7 +55,7 @@ jobs:
         run: |
           echo "event_payload=$(cat GITHUB_EVENT_PATH)" >> $GITHUB_ENV
 
-      - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ GITHUB_REPOSITORY }})"
+      - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ $GITHUB_REPOSITORY }})"
         uses: ethanthatonekid/gitcord@v1-beta
         with:
           payload: ${{ env.event_payload }}
