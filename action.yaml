@@ -30,7 +30,7 @@ runs:
       run: |
         go install github.com/ethanthatonekid/gitcord@latest
         echo "Yo!: ${{ inputs.payload }}"
-        echo "${{ inputs.payload }}" | gitcord
+        echo "${{ toJSON(inputs.payload) }}" | gitcord
       env:
         GITHUB_TOKEN: "${{ inputs.github-token }}"
         DISCORD_TOKEN: "${{ inputs.discord-token }}"
