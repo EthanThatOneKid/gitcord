@@ -91,8 +91,7 @@ func (c *Client) DoEventID(id int64) error {
 
 // DoEvent handles a GitHub event.
 func (c *Client) DoEvent(ev *github.Event) error {
-	c.client.logger.Printf("Handling event %v", *ev)
-
+	println("event payload:", *ev)
 	data, err := ev.ParsePayload()
 	if err != nil {
 		return err
