@@ -29,16 +29,15 @@ runs:
     # https://github.com/mkungla/actions-set-text-output/blob/414dd008c8ad6a77fb0fe56e62076111ca59132b/action.yml
     - name: Gitcord
       shell: bash
-      env:
-        event_payload: ${{ inputs.payload }}
       run: |
-        event_payload="${event_payload//'%'/'%25'}"
-        event_payload="${event_payload//$'\n'/'%0A'}"
-        event_payload="${event_payload//$'\r'/'%0D'}"
+        PAYLOAD="${PAYLOAD//'%'/'%25'}"
+        PAYLOAD="${PAYLOAD//$'\n'/'%0A'}"
+        PAYLOAD="${PAYLOAD//$'\r'/'%0D'}"
 
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "${{ $event_payload }}" | gitcord
+        echo "${{ $PAYLOAD }}" | gitcord
       env:
+        PAYLOAD: ${{ inputs.payload }}
         GITHUB_TOKEN: "${{ inputs.github-token }}"
         DISCORD_TOKEN: "${{ inputs.discord-token }}"
         DISCORD_CHANNEL_ID: "${{ inputs.discord-channel-id }}"
