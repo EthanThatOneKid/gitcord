@@ -57,7 +57,6 @@ func newClient(cfg Config) *client {
 	return &client{
 		github: githubclient.New(githubclient.Config{
 			OAuth:  cfg.GitHubOAuth,
-			Repo:   cfg.GitHubRepo,
 			Logger: cfg.Logger,
 		}),
 		discord: discordclient.New(discordclient.Config{

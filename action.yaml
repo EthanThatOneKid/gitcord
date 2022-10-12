@@ -1,23 +1,39 @@
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runstepsif
 
-name: 'Gitcord'
-description: 'Open the floor on Discord.'
+name: "Gitcord"
+description: "expand GitHub into Discord"
 
 inputs:
-  # all inputs are passed via env
+  github-event-payload:
+    description: "GitHub event payload passed into Gitcord stdin"
+    required: true
+  github-token:
+    description: "GitHub token used as $GITHUB_TOKEN"
+    required: true
+  discord-token:
+    description: "Discord token used as $DISCORD_TOKEN"
+    required: true
+  discord-channel-id:
+    description: "Discord channel ID used as $DISCORD_CHANNEL_ID"
+    required: true
 
 runs:
   using: "composite"
   steps:
-      - name: Setup Go
-        uses: actions/setup-go@v3
-      
-      - name: Gitcord
-        run: echo "$GITHUB_EVENT_PAYLOAD" | go run .
-        env:
-          GITHUB_REPO: github.repository.name
-          GITHUB_EVENT_PAYLOAD: ${{ github.event }}
-          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_OAUTH_TOKEN }}
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-          
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: "1.19"
+
+    - name: Install Gitcord
+      shell: bash
+      run: go install github.com/ethanthatonekid/gitcord@latest
+
+    - name: Run Gitcord for GitHub event
+      shell: bash
+      run: echo $GITHUB_EVENT_PAYLOAD | gitcord
+      env:
+        GITHUB_EVENT_PAYLOAD: ${{ inputs.github-event-payload }}
+        GITHUB_TOKEN: "${{ inputs.github-token }}"
+        DISCORD_TOKEN: "${{ inputs.discord-token }}"
+        DISCORD_CHANNEL_ID: "${{ inputs.discord-channel-id }}"

@@ -56,7 +56,6 @@ func NewApp() *App {
 			}
 
 			config := gitcord.Config{
-				GitHubRepo: os.Getenv("GITHUB_REPO"),
 				GitHubOAuth: oauth2.StaticTokenSource(&oauth2.Token{
 					AccessToken: os.Getenv("GITHUB_TOKEN"),
 				}),
