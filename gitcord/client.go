@@ -2,7 +2,6 @@ package gitcord
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
@@ -92,9 +91,7 @@ func (c *Client) DoEventID(id int64) error {
 
 // DoEvent handles a GitHub event.
 func (c *Client) DoEvent(ev *github.Event) error {
-	if ev == nil {
-		return fmt.Errorf("github event unexpectedly nil")
-	}
+	c.client.logger.Printf("Handling event %v", *ev)
 
 	data, err := ev.ParsePayload()
 	if err != nil {
