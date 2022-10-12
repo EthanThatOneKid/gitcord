@@ -22,21 +22,22 @@ runs:
   steps:
     - name: Validate GitHub event payload
       id: event_payload
+      # See:
+      # https://github.com/mkungla/actions-set-text-output/blob/414dd008c8ad6a77fb0fe56e62076111ca59132b/action.yml
+
       shell: bash
       env:
-        p: ${{ inputs.payload }}
+        event_payload: ${{ inputs.payload }}
       run: |
         if [[ -z "${{ inputs.payload }}" ]]; then
           echo "Gitcord: GitHub event payload is empty"
           exit 1
         fi
 
-        # See:
-        # https://github.com/mkungla/actions-set-text-output/blob/414dd008c8ad6a77fb0fe56e62076111ca59132b/action.yml
-        p="${p//'%'/'%25'}"
-        p="${p//$'\n'/'%0A'}"
-        p="${p//$'\r'/'%0D'}"
-        echo "::set-output name=payload::$p"
+        event_payload="${event_payload//'%'/'%25'}"
+        event_payload="${event_payload//$'\n'/'%0A'}"
+        event_payload="${event_payload//$'\r'/'%0D'}"
+        echo "::set-output name=payload::$event_payload"
 
     - name: Setup Go
       uses: actions/setup-go@v3
