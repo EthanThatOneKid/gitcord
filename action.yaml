@@ -4,17 +4,17 @@ name: "Gitcord"
 description: "expand GitHub into Discord"
 
 inputs:
-  payload:
+  github-event-payload:
     description: "GitHub event payload passed into Gitcord stdin"
     required: true
   github-token:
-    description: "GitHub token"
+    description: "GitHub token used as $GITHUB_TOKEN"
     required: true
   discord-token:
-    description: "Discord token"
+    description: "Discord token used as $DISCORD_TOKEN"
     required: true
   discord-channel-id:
-    description: "Discord channel ID"
+    description: "Discord channel ID used as $DISCORD_CHANNEL_ID"
     required: true
 
 runs:
@@ -30,14 +30,14 @@ runs:
     - name: Gitcord
       shell: bash
       run: |
-        PAYLOAD="${PAYLOAD//'%'/'%25'}"
-        PAYLOAD="${PAYLOAD//$'\n'/'%0A'}"
-        PAYLOAD="${PAYLOAD//$'\r'/'%0D'}"
+        GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//'%'/'%25'}"
+        GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\n'/'%0A'}"
+        GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\r'/'%0D'}"
 
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "${{ $PAYLOAD }}" | gitcord
+        echo "${{ $GITHUB_EVENT_PAYLOAD }}" | gitcord
       env:
-        PAYLOAD: ${{ inputs.payload }}
+        GITHUB_EVENT_PAYLOAD: ${{ inputs.github-event-payload }}
         GITHUB_TOKEN: "${{ inputs.github-token }}"
         DISCORD_TOKEN: "${{ inputs.discord-token }}"
         DISCORD_CHANNEL_ID: "${{ inputs.discord-channel-id }}"
