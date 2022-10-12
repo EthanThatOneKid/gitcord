@@ -25,19 +25,11 @@ runs:
       with:
         go-version: "1.19"
 
-    # See:
-    # https://github.com/mkungla/actions-set-text-output/blob/414dd008c8ad6a77fb0fe56e62076111ca59132b/action.yml
-    - name: Gitcord
+   - name: Gitcord
       shell: bash
       run: |
-        echo $GITHUB_EVENT_PAYLOAD
-
-        GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//'%'/'%25'}"
-        GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\n'/'%0A'}"
-        GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\r'/'%0D'}"
-
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "${{ env.GITHUB_EVENT_PAYLOAD }}" | gitcord
+        echo $GITHUB_EVENT_PAYLOAD | gitcord
       env:
         GITHUB_EVENT_PAYLOAD: ${{ inputs.github-event-payload }}
         GITHUB_TOKEN: "${{ inputs.github-token }}"
