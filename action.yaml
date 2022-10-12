@@ -25,11 +25,13 @@ runs:
       with:
         go-version: "1.19"
 
-   - name: Gitcord
+    - name: Install Gitcord
       shell: bash
-      run: |
-        go install github.com/ethanthatonekid/gitcord@latest
-        echo $GITHUB_EVENT_PAYLOAD | gitcord
+      run: go install github.com/ethanthatonekid/gitcord@latest
+
+    - name: Run Gitcord for GitHub event
+      shell: bash
+      run: echo $GITHUB_EVENT_PAYLOAD | gitcord
       env:
         GITHUB_EVENT_PAYLOAD: ${{ inputs.github-event-payload }}
         GITHUB_TOKEN: "${{ inputs.github-token }}"
