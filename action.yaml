@@ -35,7 +35,7 @@ runs:
         GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\r'/'%0D'}"
 
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "${{ $GITHUB_EVENT_PAYLOAD }}" | gitcord
+        echo "${{ env.GITHUB_EVENT_PAYLOAD }}" | gitcord
       env:
         GITHUB_EVENT_PAYLOAD: ${{ inputs.github-event-payload }}
         GITHUB_TOKEN: "${{ inputs.github-token }}"
