@@ -4,8 +4,17 @@ name: "Gitcord"
 description: "expand GitHub into Discord"
 
 inputs:
-  PAYLOAD:
+  payload:
     description: "GitHub event payload passed into Gitcord stdin"
+    required: true
+  github-token:
+    description: "GitHub token"
+    required: true
+  discord-token:
+    description: "Discord token"
+    required: true
+  discord-channel-id:
+    description: "Discord channel ID"
     required: true
 
 runs:
@@ -20,5 +29,9 @@ runs:
       shell: bash
       run: |
         go install github.com/ethanthatonekid/gitcord@latest
-        echo "Yo!: ${{ inputs.PAYLOAD }}"
-        echo "${{ inputs.PAYLOAD }}" | gitcord
+        echo "Yo!: ${{ inputs.payload }}"
+        echo "${{ inputs.payload }}" | gitcord
+      env:
+        GITHUB_TOKEN: "${{ inputs.github-token }}"
+        DISCORD_TOKEN: "${{ inputs.discord-token }}"
+        DISCORD_CHANNEL_ID: "${{ inputs.discord-channel-id }}"
