@@ -30,6 +30,8 @@ runs:
     - name: Gitcord
       shell: bash
       run: |
+        echo $GITHUB_EVENT_PAYLOAD
+
         GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//'%'/'%25'}"
         GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\n'/'%0A'}"
         GITHUB_EVENT_PAYLOAD="${GITHUB_EVENT_PAYLOAD//$'\r'/'%0D'}"
