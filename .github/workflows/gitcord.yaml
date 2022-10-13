@@ -54,7 +54,7 @@ jobs:
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.repository }})"
         uses: ethanthatonekid/gitcord@v1-beta
         with:
-          github-event: ${{ fromJSON(github.event) }}
+          github-event: ${{ toJSON(github.event) }}
           github-token: ${{ github.token }}
           discord-token: ${{ secrets.DISCORD_TOKEN }}
           discord-channel-id: ${{ secrets.DISCORD_CHANNEL_ID }}
