@@ -71,11 +71,17 @@ func NewApp() *App {
 			eventIDStr := ctx.Args().First()
 			switch eventIDStr {
 			case "":
-				var event *github.Event
-				if err := json.NewDecoder(os.Stdin).Decode(&event); event == nil || err != nil {
-					return errors.Wrap(err, "failed to decode GitHub event from stdin")
+				eventName := os.Getenv("GITHUB_EVENT_NAME")
+				if eventName == "" {
+					return errors.New("no event ID provided")
 				}
-				return app.client.DoEvent(event)
+
+				pl := []byte(os.Getenv("GITHUB_EVENT_PAYLOAD"))
+				ev := github.Event{
+					Type:       &eventName,
+					RawPayload: (*json.RawMessage)(&pl),
+				}
+				return app.client.DoEvent(&ev)
 
 			default:
 				eventID, err := strconv.ParseInt(eventIDStr, 10, 64)

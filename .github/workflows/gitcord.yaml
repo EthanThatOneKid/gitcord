@@ -51,10 +51,16 @@ jobs:
   gitcord:
     runs-on: ubuntu-latest
     steps:
+      - name: Read GitHub event payload
+        id: event_payload
+        run: |
+          echo ::set-output name=payload::$(cat $GITHUB_EVENT_PATH)
+
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.repository }})"
         uses: ethanthatonekid/gitcord@v1-beta
         with:
-          github-event: ${{ toJSON(github.event) }}
+          github-event-name: ${{ github.event_name }}
+          github-event-payload: ${{ steps.event_payload.outputs.payload }}
           github-token: ${{ github.token }}
           discord-token: ${{ secrets.DISCORD_TOKEN }}
           discord-channel-id: ${{ secrets.DISCORD_CHANNEL_ID }}

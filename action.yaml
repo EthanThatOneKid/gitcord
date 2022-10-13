@@ -4,8 +4,11 @@ name: "Gitcord"
 description: "expand GitHub into Discord"
 
 inputs:
-  github-event:
-    description: "GitHub event JSON passed into Gitcord stdin"
+  github-event-name:
+    description: "GitHub event name used as $GITHUB_EVENT_NAME"
+    requried: true
+  github-event-payload:
+    description: "GitHub event payload JSON used as $GITHUB_EVENT_PAYLOAD"
     required: true
   github-token:
     description: "GitHub token used as $GITHUB_TOKEN"
@@ -31,9 +34,10 @@ runs:
 
     - name: Run Gitcord for GitHub event
       shell: bash
-      run: echo $GITHUB_EVENT | gitcord
+      run: gitcord
       env:
-        GITHUB_EVENT: ${{ inputs.github-event }}
         GITHUB_TOKEN: "${{ inputs.github-token }}"
+        GITHUB_EVENT_NAME: ${{ inputs.github-event-name }}
+        GITHUB_EVENT_PAYLOAD: ${{ inputs.github-event-payload }}
         DISCORD_TOKEN: "${{ inputs.discord-token }}"
         DISCORD_CHANNEL_ID: "${{ inputs.discord-channel-id }}"
