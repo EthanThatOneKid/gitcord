@@ -30,7 +30,7 @@ runs:
 
     - name: Install Gitcord
       shell: bash
-      run: go install github.com/ethanthatonekid/gitcord@main
+      run: go install github.com/ethanthatonekid/gitcord@latest
 
     - name: Run Gitcord for GitHub event
       shell: bash
