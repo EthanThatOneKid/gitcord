@@ -2,6 +2,7 @@ package gitcord
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
@@ -87,6 +88,14 @@ func (c *Client) DoEventID(id int64) error {
 	}
 
 	return c.DoEvent(ev)
+}
+
+func (c *Client) DoEventPayload(name, plStr string) error {
+	pl := []byte(plStr)
+	return c.DoEvent(&github.Event{
+		Type:       &name,
+		RawPayload: (*json.RawMessage)(&pl),
+	})
 }
 
 // DoEvent handles a GitHub event.

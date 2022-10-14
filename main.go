@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/ethanthatonekid/gitcord/gitcord"
-	"github.com/google/go-github/v47/github"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -76,18 +74,19 @@ func NewApp() *App {
 					return errors.New("no event ID provided")
 				}
 
-				pl := []byte(os.Getenv("GITHUB_EVENT_PAYLOAD"))
-				ev := github.Event{
-					Type:       &eventName,
-					RawPayload: (*json.RawMessage)(&pl),
+				eventPayload := os.Getenv("GITHUB_EVENT_PAYLOAD")
+				if eventPayload == "" {
+					return errors.New("no github event payload provided")
 				}
-				return app.client.DoEvent(&ev)
+
+				return app.client.DoEventPayload(eventName, eventPayload)
 
 			default:
 				eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 				if err != nil {
 					return errors.Wrap(err, "failed to parse GitHub event ID")
 				}
+
 				return app.client.DoEventID(eventID)
 			}
 		},
