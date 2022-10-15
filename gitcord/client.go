@@ -3,6 +3,7 @@ package gitcord
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
@@ -119,7 +120,7 @@ func (c *Client) DoEvent(ev *github.Event) error {
 	case "PullRequestReviewThreadEvent":
 		return c.handlePullRequestReviewThreadEvent(data.(*github.PullRequestReviewThreadEvent))
 	default:
-		return nil
+		return fmt.Errorf("unknown event type %q", *ev.Type)
 	}
 }
 
