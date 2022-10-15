@@ -32,7 +32,7 @@ runs:
       shell: bash
       run: |-
         [[ $GITHUB_BASE_REF ]] && \
-          VERSION="$(git ls-remote 'https://.git' --short "$GITHUB_BASE_REF")" \ ||
+          VERSION="$(git ls-remote 'https://github.com/ethanthatonekid/gitcord.git' --short "$GITHUB_BASE_REF")" \ ||
           VERSION="$GITHUB_SHA"
         go install github.com/ethanthatonekid/gitcord@$VERSION
 
