@@ -4,9 +4,6 @@ name: "Gitcord"
 description: "expand GitHub into Discord"
 
 inputs:
-  version:
-    description: "Gitcord version"
-    default: "main"
   github-event-name:
     description: "GitHub event name used as $GITHUB_EVENT_NAME"
     requried: true
@@ -33,7 +30,7 @@ runs:
 
     - name: Install Gitcord
       shell: bash
-      run: go install github.com/ethanthatonekid/gitcord@${{ inputs.version }}
+      run: go install github.com/ethanthatonekid/gitcord@$GITHUB_SHA
 
     - name: Run Gitcord for GitHub event
       shell: bash
