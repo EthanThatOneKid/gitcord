@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -79,7 +80,7 @@ func NewApp() *App {
 					return errors.New("no github event payload provided")
 				}
 
-				return app.client.DoEventPayload(eventName, eventPayload)
+				return app.client.DoEventPayload(pascalFromSnake(eventName)+"Event", eventPayload)
 
 			default:
 				eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
@@ -138,4 +139,12 @@ func parseColorEnv(env string, dst *discord.Color) error {
 	*dst = discord.Color(c)
 	return nil
 
+}
+
+var psacalFromSnakeRe = regexp.MustCompile(`(?m)(^|_)[a-z]`)
+
+func pascalFromSnake(str string) string {
+	return psacalFromSnakeRe.ReplaceAllStringFunc(str, func(s string) string {
+		return strings.ToUpper(strings.TrimPrefix(s, "_"))
+	})
 }
