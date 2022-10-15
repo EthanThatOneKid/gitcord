@@ -64,6 +64,8 @@ func NewApp() *App {
 				Logger:           log.Default(),
 			}
 
+			log.Printf("Starting gitcord with config: %#v", config)
+
 			app.client = gitcord.NewClient(config).WithContext(ctx.Context)
 
 			eventIDStr := ctx.Args().First()
