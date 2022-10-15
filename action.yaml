@@ -31,7 +31,8 @@ runs:
     - name: Install Gitcord
       shell: bash
       run: |-
-        VERSION="$(git ls-remote 'https://github.com/ethanthatonekid/gitcord.git' --short "$GITHUB_ACTION_REF")"
+        echo ACTION_REF: $GITHUB_ACTION_REF
+        VERSION="$(git ls-remote 'https://github.com/ethanthatonekid/gitcord.git' --short $GITHUB_ACTION_REF)"
         go install github.com/ethanthatonekid/gitcord@$VERSION
       env:
         GITHUB_ACTION_REF: "${{ github.action_ref }}"
