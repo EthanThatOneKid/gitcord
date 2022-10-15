@@ -13,7 +13,7 @@ import (
 /// START IssuesEvent Discord embeds
 
 func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
-	fields := &[]discord.EmbedField{
+	fields := []discord.EmbedField{
 		{
 			Name:   "Status",
 			Value:  issue.GetState(),
@@ -22,7 +22,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	}
 
 	if len(issue.Labels) > 0 {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Labels",
 			Value:  convertLabels(issue.Labels),
 			Inline: true,
@@ -30,7 +30,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	}
 
 	if len(issue.Assignees) > 0 {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Assignees",
 			Value:  convertUsers(issue.Assignees),
 			Inline: true,
@@ -38,7 +38,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	}
 
 	if issue.Milestone != nil {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Milestone",
 			Value:  issue.Milestone.GetTitle(),
 			Inline: true,
@@ -46,7 +46,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	}
 
 	if issue.GetLocked() {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Locked",
 			Value:  "🔒",
 			Inline: true,
@@ -62,7 +62,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 		},
 		Description: convertMarkdown(issue.GetBody()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
-		Fields:      *fields,
+		Fields:      fields,
 	}
 }
 
@@ -207,9 +207,9 @@ func (c *Config) makeIssueTransferredEmbed(ev *github.IssuesEvent) discord.Embed
 func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	issue, comment := ev.GetIssue(), ev.GetComment()
 
-	var fields *[]discord.EmbedField
+	var fields []discord.EmbedField
 	for react, count := range parseReactions(comment.Reactions) {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   react,
 			Value:  fmt.Sprintf("%d", count),
 			Inline: true,
@@ -226,20 +226,20 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 		Description: convertMarkdown(comment.GetBody()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(IssueCommented, true),
-		Fields:      *fields,
+		Fields:      fields,
 		Author: &discord.EmbedAuthor{
 			Name: comment.GetUser().GetLogin(),
 			Icon: comment.GetUser().GetAvatarURL(),
 		},
 		// Footer is used to store the comment ID
-		Footer: &discord.EmbedFooter{Text: "0x" + strconv.FormatInt(comment.GetID(), 16)},
+		Footer: &discord.EmbedFooter{Text: strconv.FormatInt(comment.GetID(), 10)},
 	}
 }
 
 func (c *Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	return discord.Embed{
 		Title:       fmt.Sprintf("Deleted comment on issue #%d", ev.GetIssue().GetNumber()),
-		Description: fmt.Sprintf("Comment ID: %s", strconv.FormatInt(*ev.GetComment().ID, 16)),
+		Description: fmt.Sprintf("Comment ID: %s", strconv.FormatInt(*ev.GetComment().ID, 10)),
 		Author: &discord.EmbedAuthor{
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
@@ -254,10 +254,10 @@ func (c *Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) disc
 func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	pr := ev.GetPullRequest()
 
-	var fields *[]discord.EmbedField
+	var fields []discord.EmbedField
 
 	if len(pr.Labels) > 0 {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Labels",
 			Value:  convertLabels(pr.Labels),
 			Inline: true,
@@ -265,7 +265,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 
 	if len(pr.Assignees) > 0 {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Assignees",
 			Value:  convertUsers(pr.Assignees),
 			Inline: true,
@@ -273,7 +273,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 
 	if len(pr.RequestedReviewers) > 0 {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Requested reviewers",
 			Value:  convertUsers(pr.RequestedReviewers),
 			Inline: true,
@@ -281,7 +281,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 
 	if len(pr.RequestedTeams) > 0 {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   "Requested teams",
 			Value:  convertTeams(pr.RequestedTeams),
 			Inline: true,
@@ -289,7 +289,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 
 	if pr.Milestone != nil {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name: "Milestone",
 			// TODO: Provide link to milestone
 			Value:  pr.Milestone.GetTitle(),
@@ -306,7 +306,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 		},
 		Description: convertMarkdown(pr.GetBody()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
-		Fields:      *fields,
+		Fields:      fields,
 	}
 }
 
@@ -506,7 +506,7 @@ func (c *Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Em
 			Icon: review.GetUser().GetAvatarURL(),
 		},
 		// Footer is used to store the review ID, similar to makeIssueCommentEmbed
-		Footer: &discord.EmbedFooter{Text: "0x" + strconv.FormatInt(review.GetID(), 16)},
+		Footer: &discord.EmbedFooter{Text: strconv.FormatInt(review.GetID(), 10)},
 	}
 }
 
@@ -531,9 +531,9 @@ func (c *Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) d
 func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEvent) discord.Embed {
 	pr, comment := ev.GetPullRequest(), ev.GetComment()
 
-	var fields *[]discord.EmbedField
+	var fields []discord.EmbedField
 	for react, count := range parseReactions(comment.Reactions) {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   react,
 			Value:  fmt.Sprintf("%d", count),
 			Inline: true,
@@ -545,13 +545,13 @@ func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEve
 		Description: convertMarkdown(comment.GetBody()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewCommented, true),
-		Fields:      *fields,
+		Fields:      fields,
 		Author: &discord.EmbedAuthor{
 			Name: comment.GetUser().GetLogin(),
 			Icon: comment.GetUser().GetAvatarURL(),
 		},
 		// Footer is used to store the comment ID, similar to makeIssueCommentEmbed
-		Footer: &discord.EmbedFooter{Text: "0x" + strconv.FormatInt(comment.GetID(), 16)},
+		Footer: &discord.EmbedFooter{Text: strconv.FormatInt(comment.GetID(), 10)},
 	}
 }
 
@@ -575,9 +575,9 @@ func (c *Config) makePRReviewCommentDeletedEmbed(ev *github.PullRequestReviewCom
 func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent) discord.Embed {
 	pr, t := ev.GetPullRequest(), ev.GetThread()
 
-	var fields *[]discord.EmbedField
+	var fields []discord.EmbedField
 	for _, comment := range t.Comments {
-		*fields = append(*fields, discord.EmbedField{
+		fields = append(fields, discord.EmbedField{
 			Name:   fmt.Sprintf("Review comment %d", comment.GetID()),
 			Value:  convertMarkdown(comment.GetBody()),
 			Inline: false,
@@ -587,7 +587,7 @@ func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent
 	return discord.Embed{
 		Title:  fmt.Sprintf("Review thread on pull request #%d", pr.GetNumber()),
 		URL:    threadURL(t),
-		Fields: *fields,
+		Fields: fields,
 		Color:  c.ColorScheme.Color(ReviewThreaded, true),
 		Author: &discord.EmbedAuthor{
 			Name: ev.GetSender().GetLogin(),

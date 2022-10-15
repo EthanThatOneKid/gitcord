@@ -58,10 +58,16 @@ func (c *Client) guildID() (discord.GuildID, error) {
 	return ch.GuildID, nil
 }
 
-func (c *Client) activeThreads() ([]discord.Channel, error) {
+func (c *Client) threads() ([]discord.Channel, error) {
 	guildID, err := c.guildID()
 	if err != nil {
 		return nil, err
+	}
+
+	filter := func(chs []discord.Channel) []discord.Channel {
+		return slices.FilterReuse(chs, func(ch *discord.Channel) bool {
+			return ch.ParentID == c.config.ChannelID
+		})
 	}
 
 	active, err := c.Client.ActiveThreads(guildID)
@@ -69,16 +75,31 @@ func (c *Client) activeThreads() ([]discord.Channel, error) {
 		return nil, err
 	}
 
-	// Filter for relevant threads only.
-	relevant := slices.FilterReuse(active.Threads, func(ch *discord.Channel) bool {
-		return ch.ParentID == c.config.ChannelID
-	})
-	return relevant, nil
+	threads := filter(active.Threads)
+
+	var prevArchivedThreadTime discord.Timestamp
+	hasMore := true
+	for hasMore {
+		archive, err := c.Client.PublicArchivedThreadsBefore(c.config.ChannelID, prevArchivedThreadTime, 100)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to load archived threads")
+		}
+
+		threads = append(threads, filter(archive.Threads)...)
+		hasMore = archive.More
+		if hasMore {
+			earliest := archive.Threads[len(archive.Threads)-1]
+			prevArchivedThreadTime = earliest.ThreadMetadata.ArchiveTimestamp
+		}
+	}
+
+	return threads, nil
 }
 
 func (c *Client) FindThreadByNumber(id int) *discord.Channel {
-	chs, err := c.activeThreads()
+	chs, err := c.threads()
 	if err != nil {
+		log.Println(err)
 		return nil
 	}
 
@@ -101,7 +122,7 @@ func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord
 			return false
 		}
 
-		_, err := fmt.Sscanf(msg.Embeds[0].Footer.Text, "0x%x", &id)
+		_, err := fmt.Sscanf(msg.Embeds[0].Footer.Text, "0x%", &id)
 		if err != nil {
 			return false
 		}
