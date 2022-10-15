@@ -32,6 +32,12 @@ runs:
       shell: bash
       run: go install github.com/ethanthatonekid/gitcord@$GITHUB_SHA
 
+    - name: Dump
+      shell: bash
+      run: echo "$INPUTS"
+      env:
+        INPUTS: ${{ toJSON(inputs) }}
+
     - name: Run Gitcord for GitHub event
       shell: bash
       run: gitcord
