@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
+	"strconv"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -131,20 +133,25 @@ func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord
 	})
 }
 
+var issueNumberRe = regexp.MustCompile(`Issue opened: #(\d+)`)
+
 func (c *Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Message {
 	return c.findMsg(ch, true, func(msg *discord.Message) bool {
-		var id int
-
 		if len(msg.Embeds) != 1 {
 			return false
 		}
 
-		_, err := fmt.Sscanf(msg.Embeds[0].Title, "%d", &id)
+		matches := issueNumberRe.FindStringSubmatch(msg.Embeds[0].Title)
+		if len(matches) != 2 {
+			return false
+		}
+
+		n, err := strconv.Atoi(matches[1])
 		if err != nil {
 			return false
 		}
 
-		return err == nil && id == issueID
+		return n == issueID
 	})
 }
 
@@ -152,18 +159,21 @@ func (c *Client) findMsg(ch *discord.Channel, fromTop bool, f func(msg *discord.
 	var lastID discord.MessageID
 	msgs := make([]discord.Message, 0, 100)
 
-	for len(msgs) > 0 {
+	for {
 		var err error
-		switch {
-		case fromTop:
+		if fromTop {
 			msgs, err = c.MessagesAfter(ch.ID, lastID, 100)
-		default:
+		} else {
 			msgs, err = c.MessagesBefore(ch.ID, lastID, 100)
 		}
 
 		if err != nil {
 			c.logln("failed to load messages:", err)
-			return nil
+			break
+		}
+
+		if len(msgs) == 0 {
+			break
 		}
 
 		for i := range msgs {
