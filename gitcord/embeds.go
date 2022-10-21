@@ -229,6 +229,9 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 
 	var fields []discord.EmbedField
 	for react, count := range parseReactions(comment.Reactions) {
+		if count == 0 {
+			continue
+		}
 		fields = append(fields, discord.EmbedField{
 			Name:   react,
 			Value:  fmt.Sprintf("%d", count),
@@ -553,6 +556,9 @@ func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEve
 
 	var fields []discord.EmbedField
 	for react, count := range parseReactions(comment.Reactions) {
+		if count == 0 {
+			continue
+		}
 		fields = append(fields, discord.EmbedField{
 			Name:   react,
 			Value:  fmt.Sprintf("%d", count),
