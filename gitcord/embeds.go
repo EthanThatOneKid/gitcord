@@ -10,6 +10,26 @@ import (
 	smore "github.com/pythonian23/SMoRe"
 )
 
+type link struct {
+	title string
+	href  *string
+}
+
+type links []link
+
+func (l links) commaSeparatedList() string {
+	var b []string
+	for _, link := range l {
+		if link.href == nil {
+			b = append(b, link.title)
+		} else {
+			b = append(b, fmt.Sprintf("[%s](%s)", link.title, *link.href))
+		}
+	}
+
+	return strings.Join(b, ", ")
+}
+
 /// START IssuesEvent Discord embeds
 
 func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
@@ -643,12 +663,15 @@ func convertLabels[T *github.Label | github.Label](labelsV []T) string {
 		labels = convertSlicePtr(labelsV)
 	}
 
-	var labelNames []string
+	var labelNames links
 	for _, label := range labels {
-		labelNames = append(labelNames, label.GetName())
+		labelNames = append(labelNames, link{
+			title: label.GetName(),
+			href:  label.URL,
+		})
 	}
 
-	return strings.Join(labelNames, ", ")
+	return labelNames.commaSeparatedList()
 }
 
 func threadURL(t *github.PullRequestThread) (url string) {
@@ -660,23 +683,19 @@ func threadURL(t *github.PullRequestThread) (url string) {
 }
 
 func convertUsers(users []*github.User) string {
-	var names []string
-
+	var names links
 	for _, user := range users {
-		names = append(names, user.GetLogin())
+		names = append(names, link{title: user.GetLogin(), href: user.HTMLURL})
 	}
-
-	return strings.Join(names, ", ")
+	return names.commaSeparatedList()
 }
 
 func convertTeams(teams []*github.Team) string {
-	var names []string
-
+	var names links
 	for _, team := range teams {
-		names = append(names, team.GetName())
+		names = append(names, link{title: team.GetName(), href: team.HTMLURL})
 	}
-
-	return strings.Join(names, ", ")
+	return names.commaSeparatedList()
 }
 
 // see https://github.com/pythonian23/SMoRe

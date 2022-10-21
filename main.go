@@ -72,7 +72,7 @@ func NewApp() *App {
 			case "":
 				eventName := os.Getenv("GITHUB_EVENT_NAME")
 				if eventName == "" {
-					return errors.New("no event ID provided")
+					return errors.New("no github event name provided")
 				}
 
 				eventPayload := os.Getenv("GITHUB_EVENT_PAYLOAD")
@@ -141,10 +141,10 @@ func parseColorEnv(env string, dst *discord.Color) error {
 
 }
 
-var psacalFromSnakeRe = regexp.MustCompile(`(?m)(^|_)[a-z]`)
+var pascalFromSnakeRe = regexp.MustCompile(`(?m)(^|_)[a-z]`)
 
 func pascalFromSnake(str string) string {
-	return psacalFromSnakeRe.ReplaceAllStringFunc(str, func(s string) string {
+	return pascalFromSnakeRe.ReplaceAllStringFunc(str, func(s string) string {
 		return strings.ToUpper(strings.TrimPrefix(s, "_"))
 	})
 }
