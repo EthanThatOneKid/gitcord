@@ -118,13 +118,12 @@ func findChannelByNumber(channels []discord.Channel, targetID int) *discord.Chan
 
 func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord.Message {
 	return c.findMsg(ch, false, func(msg *discord.Message) bool {
-		var id int64
-
 		if len(msg.Embeds) != 1 {
 			return false
 		}
 
-		_, err := fmt.Sscanf(msg.Embeds[0].Footer.Text, "0x%", &id)
+		// Parse int64 comment ID from the embed's footer.
+		id, err := strconv.ParseInt(msg.Embeds[0].Footer.Text, 10, 64)
 		if err != nil {
 			return false
 		}
