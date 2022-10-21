@@ -59,7 +59,7 @@ jobs:
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.repository }})"
         uses: ethanthatonekid/gitcord@main
         with:
-          github-event-name: ${{ $GITHUB_EVENT_TYPE }}
+          github-event-name: ${{ github.event_name }}
           github-event-payload: ${{ steps.event_payload.outputs.payload }}
           github-token: ${{ github.token }}
           discord-token: ${{ secrets.DISCORD_TOKEN }}
