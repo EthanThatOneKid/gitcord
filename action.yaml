@@ -32,7 +32,7 @@ runs:
       shell: bash
       run: |-
         VERSION=$GITHUB_SHA
-        [[ $GITHUB_EVENT_TYPE = "pull_request"* ]] && VERSION=latest
+        [[ ${{ inputs.github-event-name }} = "pull_request"* ]] && VERSION=latest
         go install github.com/ethanthatonekid/gitcord@$VERSION
 
     - name: Run Gitcord for GitHub event
