@@ -7,7 +7,10 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/google/go-github/v47/github"
-	smore "github.com/pythonian23/SMoRe"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 type link struct {
@@ -709,12 +712,30 @@ var truncateMsg = "... (_truncated_)"
 
 // see https://github.com/pythonian23/SMoRe
 func convertMarkdown(githubMD string) string {
-	s := smore.Render(githubMD)
-	if maxMsgSize > len(s) {
-		return s
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithHardWraps(),
+			html.WithXHTML(),
+		),
+		// TODO
+		goldmark.WithRenderer(nil),
+	)
+
+	var buf strings.Builder
+	if err := md.Convert([]byte(githubMD), &buf); err != nil {
+		return githubMD
 	}
 
-	return s[:strings.LastIndex(s[:maxMsgSize-len(truncateMsg)], " ")]
+	if maxMsgSize > buf.Len() {
+		return buf.String()
+	}
+
+	s := buf.String()
+	return s[:strings.LastIndex(s[:maxMsgSize-len(truncateMsg)], " ")] + truncateMsg
 }
 
 // checkPR checks if an issue happens to be a pull request
