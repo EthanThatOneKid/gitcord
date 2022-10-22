@@ -704,9 +704,17 @@ func convertTeams(teams []*github.Team) string {
 	return names.commaSeparatedList()
 }
 
+var maxMsgSize = 4096
+var truncateMsg = "... (_truncated_)"
+
 // see https://github.com/pythonian23/SMoRe
 func convertMarkdown(githubMD string) string {
-	return smore.Render(githubMD)
+	s := smore.Render(githubMD)
+	if maxMsgSize > len(s) {
+		return s
+	}
+
+	return s[:strings.LastIndex(s[:maxMsgSize-len(truncateMsg)], " ")]
 }
 
 // checkPR checks if an issue happens to be a pull request
