@@ -6,16 +6,15 @@ import (
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/ningen/v3/discordmd"
 	"github.com/google/go-github/v47/github"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/text"
 )
 
 type link struct {
 	title string
-	href  *string
+	href  string
 }
 
 type links []link
@@ -23,11 +22,7 @@ type links []link
 func (l links) commaSeparatedList() string {
 	var b []string
 	for _, link := range l {
-		if link.href == nil {
-			b = append(b, link.title)
-		} else {
-			b = append(b, fmt.Sprintf("[%s](%s)", link.title, *link.href))
-		}
+		b = append(b, convertHyperlink(link.title, link.href))
 	}
 
 	return strings.Join(b, ", ")
@@ -38,41 +33,36 @@ func (l links) commaSeparatedList() string {
 func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	fields := []discord.EmbedField{
 		{
-			Name:   "Status",
-			Value:  issue.GetState(),
-			Inline: true,
+			Name:  "Status",
+			Value: issue.GetState(),
 		},
 	}
 
 	if len(issue.Labels) > 0 {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Labels",
-			Value:  convertLabels(issue.Labels),
-			Inline: true,
+			Name:  "Labels",
+			Value: convertLabels(issue.Labels),
 		})
 	}
 
 	if len(issue.Assignees) > 0 {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Assignees",
-			Value:  convertUsers(issue.Assignees),
-			Inline: true,
+			Name:  "Assignees",
+			Value: convertUsers(issue.Assignees),
 		})
 	}
 
 	if issue.Milestone != nil {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Milestone",
-			Value:  issue.Milestone.GetTitle(),
-			Inline: true,
+			Name:  "Milestone",
+			Value: convertHyperlink(issue.Milestone.GetTitle(), issue.Milestone.GetHTMLURL()),
 		})
 	}
 
 	if issue.GetLocked() {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Locked",
-			Value:  "🔒",
-			Inline: true,
+			Name:  "Locked",
+			Value: "🔒",
 		})
 	}
 
@@ -83,7 +73,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 			Name: issue.GetUser().GetLogin(),
 			Icon: issue.GetUser().GetAvatarURL(),
 		},
-		Description: convertMarkdown(issue.GetBody()),
+		Description: convertMarkdown(issue.GetBody(), issue.GetHTMLURL()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
 		Fields:      fields,
 	}
@@ -160,7 +150,7 @@ func (c *Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed 
 func (c *Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		// TODO: Add milestone title
-		Title: fmt.Sprintf("Issue #%d: milestone added", ev.GetIssue().GetNumber()),
+		Title: fmt.Sprintf("Issue #%d: %s milestone added", ev.GetIssue().GetMilestone().GetTitle(), ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueMilestoned, true),
 		Author: &discord.EmbedAuthor{
 			Name: ev.GetSender().GetLogin(),
@@ -171,7 +161,7 @@ func (c *Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed 
 
 func (c *Config) makeIssueDemilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
-		Title: fmt.Sprintf("Issue #%d: milestone removed", ev.GetIssue().GetNumber()),
+		Title: fmt.Sprintf("Issue #%d: %s milestone removed", ev.GetIssue().GetMilestone().GetTitle(), ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueDemilestoned, true),
 		Author: &discord.EmbedAuthor{
 			Name: ev.GetSender().GetLogin(),
@@ -236,9 +226,8 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 			continue
 		}
 		fields = append(fields, discord.EmbedField{
-			Name:   react,
-			Value:  fmt.Sprintf("%d", count),
-			Inline: true,
+			Name:  react,
+			Value: fmt.Sprintf("%d", count),
 		})
 	}
 
@@ -249,7 +238,7 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 
 	return discord.Embed{
 		Title:       title,
-		Description: convertMarkdown(comment.GetBody()),
+		Description: convertMarkdown(comment.GetBody(), comment.GetHTMLURL()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(IssueCommented, true),
 		Fields:      fields,
@@ -284,33 +273,29 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 
 	if len(pr.Labels) > 0 {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Labels",
-			Value:  convertLabels(pr.Labels),
-			Inline: true,
+			Name:  "Labels",
+			Value: convertLabels(pr.Labels),
 		})
 	}
 
 	if len(pr.Assignees) > 0 {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Assignees",
-			Value:  convertUsers(pr.Assignees),
-			Inline: true,
+			Name:  "Assignees",
+			Value: convertUsers(pr.Assignees),
 		})
 	}
 
 	if len(pr.RequestedReviewers) > 0 {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Requested reviewers",
-			Value:  convertUsers(pr.RequestedReviewers),
-			Inline: true,
+			Name:  "Requested reviewers",
+			Value: convertUsers(pr.RequestedReviewers),
 		})
 	}
 
 	if len(pr.RequestedTeams) > 0 {
 		fields = append(fields, discord.EmbedField{
-			Name:   "Requested teams",
-			Value:  convertTeams(pr.RequestedTeams),
-			Inline: true,
+			Name:  "Requested teams",
+			Value: convertTeams(pr.RequestedTeams),
 		})
 	}
 
@@ -318,8 +303,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 		fields = append(fields, discord.EmbedField{
 			Name: "Milestone",
 			// TODO: Provide link to milestone
-			Value:  pr.Milestone.GetTitle(),
-			Inline: true,
+			Value: pr.Milestone.GetTitle(),
 		})
 	}
 
@@ -330,7 +314,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 			Name: pr.GetUser().GetLogin(),
 			Icon: pr.GetUser().GetAvatarURL(),
 		},
-		Description: convertMarkdown(pr.GetBody()),
+		Description: convertMarkdown(pr.GetBody(), pr.GetHTMLURL()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
 		Fields:      fields,
 	}
@@ -524,7 +508,7 @@ func (c *Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Em
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review submitted on pull request #%d", pr.GetNumber()),
-		Description: convertMarkdown(review.GetBody()),
+		Description: convertMarkdown(review.GetBody(), review.GetHTMLURL()),
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(Reviewed, true),
 		Author: &discord.EmbedAuthor{
@@ -541,7 +525,7 @@ func (c *Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) d
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review dismissed on pull request #%d", pr.GetNumber()),
-		Description: convertMarkdown(review.GetBody()),
+		Description: convertMarkdown(review.GetBody(), review.GetHTMLURL()),
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewDismissed, true),
 		Author: &discord.EmbedAuthor{
@@ -563,15 +547,14 @@ func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEve
 			continue
 		}
 		fields = append(fields, discord.EmbedField{
-			Name:   react,
-			Value:  fmt.Sprintf("%d", count),
-			Inline: true,
+			Name:  react,
+			Value: fmt.Sprintf("%d", count),
 		})
 	}
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review comment on pull request #%d", pr.GetNumber()),
-		Description: convertMarkdown(comment.GetBody()),
+		Description: convertMarkdown(comment.GetBody(), comment.GetHTMLURL()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewCommented, true),
 		Fields:      fields,
@@ -608,7 +591,7 @@ func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent
 	for _, comment := range t.Comments {
 		fields = append(fields, discord.EmbedField{
 			Name:   fmt.Sprintf("Review comment %d", comment.GetID()),
-			Value:  convertMarkdown(comment.GetBody()),
+			Value:  convertMarkdown(comment.GetBody(), comment.GetHTMLURL()),
 			Inline: false,
 		})
 	}
@@ -676,7 +659,7 @@ func convertLabels[T *github.Label | github.Label](labelsV []T) string {
 	for _, label := range labels {
 		labelNames = append(labelNames, link{
 			title: label.GetName(),
-			href:  label.URL,
+			href:  label.GetURL(),
 		})
 	}
 
@@ -694,7 +677,7 @@ func threadURL(t *github.PullRequestThread) (url string) {
 func convertUsers(users []*github.User) string {
 	var names links
 	for _, user := range users {
-		names = append(names, link{title: user.GetLogin(), href: user.HTMLURL})
+		names = append(names, link{title: user.GetLogin(), href: user.GetHTMLURL()})
 	}
 	return names.commaSeparatedList()
 }
@@ -702,40 +685,43 @@ func convertUsers(users []*github.User) string {
 func convertTeams(teams []*github.Team) string {
 	var names links
 	for _, team := range teams {
-		names = append(names, link{title: team.GetName(), href: team.HTMLURL})
+		names = append(names, link{title: team.GetName(), href: team.GetHTMLURL()})
 	}
 	return names.commaSeparatedList()
 }
 
-var maxMsgSize = 4096
-var truncateMsg = "... (_truncated_)"
+var mdMaxSize = 4096
+var mdParser = parser.NewParser(
+	parser.WithBlockParsers(discordmd.BlockParsers()...),
+	parser.WithInlineParsers(discordmd.InlineParserWithLink()...),
+)
 
-// see https://github.com/pythonian23/SMoRe
-func convertMarkdown(githubMD string) string {
-	md := goldmark.New(
-		goldmark.WithExtensions(extension.GFM),
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-		),
-		goldmark.WithRendererOptions(
-			html.WithHardWraps(),
-			html.WithXHTML(),
-		),
-		// TODO
-		goldmark.WithRenderer(nil),
-	)
+func convertHyperlink(content, href string) string {
+	if href == "" {
+		return content
+	}
+	return fmt.Sprintf("[%s](%s)", content, href)
+}
 
-	var buf strings.Builder
-	if err := md.Convert([]byte(githubMD), &buf); err != nil {
+func convertMarkdown(githubMD, readMoreURL string) string {
+	bytes, buff := []byte(githubMD), strings.Builder{}
+	node := mdParser.Parse(text.NewReader(bytes))
+	if err := discordmd.DefaultRenderer.Render(&buff, bytes, node); err != nil {
 		return githubMD
 	}
 
-	if maxMsgSize > buf.Len() {
-		return buf.String()
+	s := buff.String()
+	if len(s) <= mdMaxSize {
+		return s
 	}
 
-	s := buf.String()
-	return s[:strings.LastIndex(s[:maxMsgSize-len(truncateMsg)], " ")] + truncateMsg
+	// If the message is too long, we need to truncate it.
+	truncateMsg := "... (truncated)"
+	if readMoreURL != "" {
+		truncateMsg = fmt.Sprintf("... (%s)", convertHyperlink("_read more_", readMoreURL))
+	}
+
+	return s[:strings.LastIndex(s[:mdMaxSize-len(truncateMsg)], " ")] + truncateMsg
 }
 
 // checkPR checks if an issue happens to be a pull request

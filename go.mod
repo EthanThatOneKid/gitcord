@@ -3,14 +3,16 @@ module github.com/ethanthatonekid/gitcord
 go 1.19
 
 require (
+	github.com/diamondburned/ningen/v3 v3.0.0-20221020234758-38b078a9ab7b
 	github.com/google/go-github/v47 v47.1.0
-	github.com/yuin/goldmark v1.5.2
+	github.com/yuin/goldmark v1.3.2
 )
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	go4.org v0.0.0-20200411211856-f5505b9728dd // indirect
 )
 
 require (
