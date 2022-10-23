@@ -70,6 +70,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 		Title: fmt.Sprintf("Issue opened: #%d %s", issue.GetNumber(), issue.GetTitle()),
 		URL:   issue.GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  issue.GetUser().GetHTMLURL(),
 			Name: issue.GetUser().GetLogin(),
 			Icon: issue.GetUser().GetAvatarURL(),
 		},
@@ -84,6 +85,7 @@ func (c *Config) makeIssueClosedEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d closed as completed", ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueClosed, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -95,6 +97,7 @@ func (c *Config) makeIssueReopenedEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d reopened", ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueReopened, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -107,6 +110,7 @@ func (c *Config) makeIssueLabeledEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d: added %s label", ev.GetIssue().GetNumber(), ev.GetLabel().GetName()),
 		Color: c.ColorScheme.Color(IssueLabeled, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -119,6 +123,7 @@ func (c *Config) makeIssueUnlabeledEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d: removed %s label", ev.GetIssue().GetNumber(), ev.GetLabel().GetName()),
 		Color: c.ColorScheme.Color(IssueUnlabeled, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -130,6 +135,7 @@ func (c *Config) makeIssueAssignedEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d assigned to %s", ev.GetIssue().GetNumber(), ev.GetAssignee().GetLogin()),
 		Color: c.ColorScheme.Color(IssueAssigned, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -141,6 +147,7 @@ func (c *Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed 
 		Title: fmt.Sprintf("Issue #%d unassigned to %s", ev.GetIssue().GetNumber(), ev.GetAssignee().GetLogin()),
 		Color: c.ColorScheme.Color(IssueUnassigned, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -150,9 +157,10 @@ func (c *Config) makeIssueUnassignedEmbed(ev *github.IssuesEvent) discord.Embed 
 func (c *Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
 		// TODO: Add milestone title
-		Title: fmt.Sprintf("Issue #%d: %s milestone added", ev.GetIssue().GetMilestone().GetTitle(), ev.GetIssue().GetNumber()),
+		Title: fmt.Sprintf("Issue #%d: %s milestone added", ev.GetIssue().GetNumber(), ev.GetIssue().GetMilestone().GetTitle()),
 		Color: c.ColorScheme.Color(IssueMilestoned, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -161,9 +169,10 @@ func (c *Config) makeIssueMilestonedEmbed(ev *github.IssuesEvent) discord.Embed 
 
 func (c *Config) makeIssueDemilestonedEmbed(ev *github.IssuesEvent) discord.Embed {
 	return discord.Embed{
-		Title: fmt.Sprintf("Issue #%d: %s milestone removed", ev.GetIssue().GetMilestone().GetTitle(), ev.GetIssue().GetNumber()),
+		Title: fmt.Sprintf("Issue #%d: %s milestone removed", ev.GetIssue().GetNumber(), ev.GetIssue().GetMilestone().GetTitle()),
 		Color: c.ColorScheme.Color(IssueDemilestoned, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -175,6 +184,7 @@ func (c *Config) makeIssueDeletedEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d deleted", ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueDeleted, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -186,6 +196,7 @@ func (c *Config) makeIssueLockedEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d locked", ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueLocked, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -197,6 +208,7 @@ func (c *Config) makeIssueUnlockedEmbed(ev *github.IssuesEvent) discord.Embed {
 		Title: fmt.Sprintf("Issue #%d unlocked", ev.GetIssue().GetNumber()),
 		Color: c.ColorScheme.Color(IssueUnlocked, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -208,6 +220,7 @@ func (c *Config) makeIssueTransferredEmbed(ev *github.IssuesEvent) discord.Embed
 		Title: fmt.Sprintf("Issue #%d transferred to %s", ev.GetIssue().GetNumber(), ev.GetRepo().GetFullName()),
 		Color: c.ColorScheme.Color(IssueTransferred, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -243,6 +256,7 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 		Color:       c.ColorScheme.Color(IssueCommented, true),
 		Fields:      fields,
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: comment.GetUser().GetLogin(),
 			Icon: comment.GetUser().GetAvatarURL(),
 		},
@@ -254,12 +268,14 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 func (c *Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	return discord.Embed{
 		Title:       fmt.Sprintf("Deleted comment on issue #%d", ev.GetIssue().GetNumber()),
-		Description: fmt.Sprintf("Comment ID: %s", strconv.FormatInt(*ev.GetComment().ID, 10)),
+		Description: convertMarkdown(ev.GetComment().GetBody(), ""),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
-		Color: c.ColorScheme.Color(IssueCommentDeleted, true),
+		Color:  c.ColorScheme.Color(IssueCommentDeleted, true),
+		Footer: &discord.EmbedFooter{Text: strconv.FormatInt(ev.GetComment().GetID(), 10)},
 	}
 }
 
@@ -311,6 +327,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 		Title: fmt.Sprintf("Pull request opened: #%d %s", pr.GetNumber(), pr.GetTitle()),
 		URL:   pr.GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: pr.GetUser().GetLogin(),
 			Icon: pr.GetUser().GetAvatarURL(),
 		},
@@ -326,6 +343,7 @@ func (c *Config) makePRClosedEmbed(ev *github.PullRequestEvent) discord.Embed {
 		Color: c.ColorScheme.Color(PRClosed, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -338,6 +356,7 @@ func (c *Config) makePRReopenedEmbed(ev *github.PullRequestEvent) discord.Embed 
 		Color: c.ColorScheme.Color(PRReopened, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -350,6 +369,7 @@ func (c *Config) makePRAssignedEmbed(ev *github.PullRequestEvent) discord.Embed 
 		Color: c.ColorScheme.Color(PRAssigned, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -362,6 +382,7 @@ func (c *Config) makePRUnassignedEmbed(ev *github.PullRequestEvent) discord.Embe
 		Color: c.ColorScheme.Color(PRUnassigned, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -374,6 +395,7 @@ func (c *Config) makePRDeletedEmbed(ev *github.PullRequestEvent) discord.Embed {
 		Color: c.ColorScheme.Color(PRDeleted, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -386,6 +408,7 @@ func (c *Config) makePRTransferredEmbed(ev *github.PullRequestEvent) discord.Emb
 		Color: c.ColorScheme.Color(PRTransferred, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -398,6 +421,7 @@ func (c *Config) makePRLabeledEmbed(ev *github.PullRequestEvent) discord.Embed {
 		Color: c.ColorScheme.Color(PRLabeled, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -410,6 +434,7 @@ func (c *Config) makePRUnlabeledEmbed(ev *github.PullRequestEvent) discord.Embed
 		Color: c.ColorScheme.Color(PRUnlabeled, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -422,6 +447,7 @@ func (c *Config) makePRMilestonedEmbed(ev *github.PullRequestEvent) discord.Embe
 		Color: c.ColorScheme.Color(PRMilestoned, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -434,6 +460,7 @@ func (c *Config) makePRDemilestonedEmbed(ev *github.PullRequestEvent) discord.Em
 		Color: c.ColorScheme.Color(PRDemilestoned, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -446,6 +473,7 @@ func (c *Config) makePRLockedEmbed(ev *github.PullRequestEvent) discord.Embed {
 		Color: c.ColorScheme.Color(PRLocked, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -458,6 +486,7 @@ func (c *Config) makePRUnlockedEmbed(ev *github.PullRequestEvent) discord.Embed 
 		Color: c.ColorScheme.Color(PRUnlocked, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -470,6 +499,7 @@ func (c *Config) makePRReviewRequestedEmbed(ev *github.PullRequestEvent) discord
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Color: c.ColorScheme.Color(PRReviewRequested, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -482,6 +512,7 @@ func (c *Config) makePRReviewRequestRemovedEmbed(ev *github.PullRequestEvent) di
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Color: c.ColorScheme.Color(PRReviewRequestRemoved, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -494,6 +525,7 @@ func (c *Config) makePRReadyForReviewEmbed(ev *github.PullRequestEvent) discord.
 		Color: c.ColorScheme.Color(PRReadyForReview, true),
 		URL:   ev.GetPullRequest().GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -512,6 +544,7 @@ func (c *Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Em
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(Reviewed, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: review.GetUser().GetLogin(),
 			Icon: review.GetUser().GetAvatarURL(),
 		},
@@ -529,6 +562,7 @@ func (c *Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) d
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewDismissed, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -559,6 +593,7 @@ func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEve
 		Color:       c.ColorScheme.Color(ReviewCommented, true),
 		Fields:      fields,
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: comment.GetUser().GetLogin(),
 			Icon: comment.GetUser().GetAvatarURL(),
 		},
@@ -575,6 +610,7 @@ func (c *Config) makePRReviewCommentDeletedEmbed(ev *github.PullRequestReviewCom
 		URL:   comment.GetHTMLURL(),
 		Color: c.ColorScheme.Color(ReviewCommentDeleted, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -602,6 +638,7 @@ func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent
 		Fields: fields,
 		Color:  c.ColorScheme.Color(ReviewThreaded, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -616,6 +653,7 @@ func (c *Config) makePRReviewThreadResolvedEmbed(ev *github.PullRequestReviewThr
 		URL:   threadURL(t),
 		Color: c.ColorScheme.Color(ReviewThreadResolved, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
@@ -630,6 +668,7 @@ func (c *Config) makePRReviewThreadUnresolvedEmbed(ev *github.PullRequestReviewT
 		URL:   threadURL(t),
 		Color: c.ColorScheme.Color(ReviewThreadUnresolved, true),
 		Author: &discord.EmbedAuthor{
+			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
 			Icon: ev.GetSender().GetAvatarURL(),
 		},
