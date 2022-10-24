@@ -56,6 +56,12 @@ jobs:
         run: |
           echo ::set-output name=payload::$(cat $GITHUB_EVENT_PATH)
 
+      - name: Derive Gitcord version
+        run: |
+          VERSION=$GITHUB_SHA
+          [[ ${{ github.event_name }} = "pull_request"* ]] && VERSION=latest
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: "Gitcord ${{ github.event_name }}:${{ github.event.action }} (${{ github.repository }})"
         uses: ethanthatonekid/gitcord@main
         with:
@@ -64,3 +70,4 @@ jobs:
           github-token: ${{ github.token }}
           discord-token: ${{ secrets.DISCORD_TOKEN }}
           discord-channel-id: ${{ secrets.DISCORD_CHANNEL_ID }}
+          version: ${{ env.VERSION }}

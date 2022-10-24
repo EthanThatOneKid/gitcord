@@ -19,6 +19,9 @@ inputs:
   discord-channel-id:
     description: "Discord channel ID used as $DISCORD_CHANNEL_ID"
     required: true
+  version:
+    description: "Version of Gitcord CLI"
+    default: "latest"
 
 runs:
   using: "composite"
@@ -30,10 +33,7 @@ runs:
 
     - name: Install Gitcord
       shell: bash
-      run: |-
-        VERSION=$GITHUB_SHA
-        [[ ${{ inputs.github-event-name }} = "pull_request"* ]] && VERSION=latest
-        go install github.com/ethanthatonekid/gitcord@$VERSION
+      run: go install github.com/ethanthatonekid/gitcord@${{ inputs.version }}
 
     - name: Run Gitcord for GitHub event
       shell: bash
