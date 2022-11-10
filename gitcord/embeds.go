@@ -8,7 +8,8 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/ningen/v3/discordmd"
 	"github.com/google/go-github/v47/github"
-	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/text"
 )
 
@@ -730,10 +731,7 @@ func convertTeams(teams []*github.Team) string {
 }
 
 var mdMaxSize = 4096
-var mdParser = parser.NewParser(
-	parser.WithBlockParsers(discordmd.BlockParsers()...),
-	parser.WithInlineParsers(discordmd.InlineParserWithLink()...),
-)
+var mdParser = goldmark.New(goldmark.WithExtensions(extension.GFM)).Parser()
 
 func convertHyperlink(content, href string) string {
 	if href == "" {
