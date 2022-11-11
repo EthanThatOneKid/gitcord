@@ -132,7 +132,8 @@ func (c *Client) FindMsgByComment(ch *discord.Channel, commentID int64) *discord
 	})
 }
 
-var issueNumberRe = regexp.MustCompile(`Issue opened: #(\d+)`)
+var IssueMsgPrefix = "Issue opened: #"
+var issueNumberRe = regexp.MustCompile(IssueMsgPrefix + `(\d+)`)
 
 func (c *Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Message {
 	return c.findMsg(ch, true, func(msg *discord.Message) bool {
@@ -141,6 +142,29 @@ func (c *Client) FindMsgByIssue(ch *discord.Channel, issueID int) *discord.Messa
 		}
 
 		matches := issueNumberRe.FindStringSubmatch(msg.Embeds[0].Title)
+		if len(matches) != 2 {
+			return false
+		}
+
+		n, err := strconv.Atoi(matches[1])
+		if err != nil {
+			return false
+		}
+
+		return n == issueID
+	})
+}
+
+var PRMsgPrefix = "Pull request opened: #"
+var prNumberRe = regexp.MustCompile(PRMsgPrefix + `(\d+)`)
+
+func (c *Client) FindMsgByPR(ch *discord.Channel, issueID int) *discord.Message {
+	return c.findMsg(ch, true, func(msg *discord.Message) bool {
+		if len(msg.Embeds) != 1 {
+			return false
+		}
+
+		matches := prNumberRe.FindStringSubmatch(msg.Embeds[0].Title)
 		if len(matches) != 2 {
 			return false
 		}
