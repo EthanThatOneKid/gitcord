@@ -3,31 +3,12 @@ package gitcord
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/ningen/v3/discordmd"
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
+	"github.com/ethanthatonekid/gitcord/gitcord/internal/markdown"
 	"github.com/google/go-github/v47/github"
-	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/text"
 )
-
-type link struct {
-	title string
-	href  string
-}
-
-type links []link
-
-func (l links) commaSeparatedList() string {
-	var b []string
-	for _, link := range l {
-		b = append(b, convertHyperlink(link.title, link.href))
-	}
-
-	return strings.Join(b, ", ")
-}
 
 /// START IssuesEvent Discord embeds
 
@@ -42,21 +23,21 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	if len(issue.Labels) > 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Labels",
-			Value: convertLabels(issue.Labels),
+			Value: markdown.ConvertLabels(issue.Labels),
 		})
 	}
 
 	if len(issue.Assignees) > 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Assignees",
-			Value: convertUsers(issue.Assignees),
+			Value: markdown.ConvertUsers(issue.Assignees),
 		})
 	}
 
 	if issue.Milestone != nil {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Milestone",
-			Value: convertHyperlink(issue.Milestone.GetTitle(), issue.Milestone.GetHTMLURL()),
+			Value: markdown.ConvertHyperlink(issue.Milestone.GetTitle(), issue.Milestone.GetHTMLURL()),
 		})
 	}
 
@@ -75,7 +56,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 			Name: issue.GetUser().GetLogin(),
 			Icon: issue.GetUser().GetAvatarURL(),
 		},
-		Description: convertMarkdown(issue.GetBody(), issue.GetHTMLURL()),
+		Description: markdown.Convert(issue.GetBody(), issue.GetHTMLURL()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
 		Fields:      fields,
 	}
@@ -252,7 +233,7 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 
 	return discord.Embed{
 		Title:       title,
-		Description: convertMarkdown(comment.GetBody(), comment.GetHTMLURL()),
+		Description: markdown.Convert(comment.GetBody(), comment.GetHTMLURL()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(IssueCommented, true),
 		Fields:      fields,
@@ -269,7 +250,7 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 func (c *Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	return discord.Embed{
 		Title:       fmt.Sprintf("Deleted comment on issue #%d", ev.GetIssue().GetNumber()),
-		Description: convertMarkdown(ev.GetComment().GetBody(), ""),
+		Description: markdown.Convert(ev.GetComment().GetBody(), ""),
 		Author: &discord.EmbedAuthor{
 			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
@@ -291,28 +272,28 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	if len(pr.Labels) > 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Labels",
-			Value: convertLabels(pr.Labels),
+			Value: markdown.ConvertLabels(pr.Labels),
 		})
 	}
 
 	if len(pr.Assignees) > 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Assignees",
-			Value: convertUsers(pr.Assignees),
+			Value: markdown.ConvertUsers(pr.Assignees),
 		})
 	}
 
 	if len(pr.RequestedReviewers) > 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Requested reviewers",
-			Value: convertUsers(pr.RequestedReviewers),
+			Value: markdown.ConvertUsers(pr.RequestedReviewers),
 		})
 	}
 
 	if len(pr.RequestedTeams) > 0 {
 		fields = append(fields, discord.EmbedField{
 			Name:  "Requested teams",
-			Value: convertTeams(pr.RequestedTeams),
+			Value: markdown.ConvertTeams(pr.RequestedTeams),
 		})
 	}
 
@@ -332,7 +313,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 			Name: pr.GetUser().GetLogin(),
 			Icon: pr.GetUser().GetAvatarURL(),
 		},
-		Description: convertMarkdown(pr.GetBody(), pr.GetHTMLURL()),
+		Description: markdown.Convert(pr.GetBody(), pr.GetHTMLURL()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
 		Fields:      fields,
 	}
@@ -541,7 +522,7 @@ func (c *Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Em
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review submitted on pull request #%d", pr.GetNumber()),
-		Description: convertMarkdown(review.GetBody(), review.GetHTMLURL()),
+		Description: markdown.Convert(review.GetBody(), review.GetHTMLURL()),
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(Reviewed, true),
 		Author: &discord.EmbedAuthor{
@@ -559,7 +540,7 @@ func (c *Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) d
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review dismissed on pull request #%d", pr.GetNumber()),
-		Description: convertMarkdown(review.GetBody(), review.GetHTMLURL()),
+		Description: markdown.Convert(review.GetBody(), review.GetHTMLURL()),
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewDismissed, true),
 		Author: &discord.EmbedAuthor{
@@ -589,7 +570,7 @@ func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEve
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review comment on pull request #%d", pr.GetNumber()),
-		Description: convertMarkdown(comment.GetBody(), comment.GetHTMLURL()),
+		Description: markdown.Convert(comment.GetBody(), comment.GetHTMLURL()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewCommented, true),
 		Fields:      fields,
@@ -628,14 +609,14 @@ func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent
 	for _, comment := range t.Comments {
 		fields = append(fields, discord.EmbedField{
 			Name:   fmt.Sprintf("Review comment %d", comment.GetID()),
-			Value:  convertMarkdown(comment.GetBody(), comment.GetHTMLURL()),
+			Value:  markdown.Convert(comment.GetBody(), comment.GetHTMLURL()),
 			Inline: false,
 		})
 	}
 
 	return discord.Embed{
 		Title:  fmt.Sprintf("Review thread on pull request #%d", pr.GetNumber()),
-		URL:    threadURL(t),
+		URL:    markdown.ConvertThreadURL(t),
 		Fields: fields,
 		Color:  c.ColorScheme.Color(ReviewThreaded, true),
 		Author: &discord.EmbedAuthor{
@@ -651,7 +632,7 @@ func (c *Config) makePRReviewThreadResolvedEmbed(ev *github.PullRequestReviewThr
 
 	return discord.Embed{
 		Title: fmt.Sprintf("Review thread resolved on pull request #%d", pr.GetNumber()),
-		URL:   threadURL(t),
+		URL:   markdown.ConvertThreadURL(t),
 		Color: c.ColorScheme.Color(ReviewThreadResolved, true),
 		Author: &discord.EmbedAuthor{
 			URL:  ev.GetSender().GetHTMLURL(),
@@ -666,7 +647,7 @@ func (c *Config) makePRReviewThreadUnresolvedEmbed(ev *github.PullRequestReviewT
 
 	return discord.Embed{
 		Title: fmt.Sprintf("Review thread unresolved on pull request #%d", pr.GetNumber()),
-		URL:   threadURL(t),
+		URL:   markdown.ConvertThreadURL(t),
 		Color: c.ColorScheme.Color(ReviewThreadUnresolved, true),
 		Author: &discord.EmbedAuthor{
 			URL:  ev.GetSender().GetHTMLURL(),
@@ -677,92 +658,6 @@ func (c *Config) makePRReviewThreadUnresolvedEmbed(ev *github.PullRequestReviewT
 }
 
 /// END PullRequestReviewThreadEvent Discord embeds
-
-func convertSlicePtr[T any](s []*T) []T {
-	r := make([]T, 0, len(s))
-	for _, v := range s {
-		r = append(r, *v)
-	}
-	return r
-}
-
-func convertLabels[T *github.Label | github.Label](labelsV []T) string {
-	var labels []github.Label
-	switch labelsV := any(labelsV).(type) {
-	case []github.Label:
-		labels = labelsV
-	case []*github.Label:
-		labels = convertSlicePtr(labelsV)
-	}
-
-	var labelNames links
-	for _, label := range labels {
-		labelNames = append(labelNames, link{
-			title: label.GetName(),
-			href:  label.GetURL(),
-		})
-	}
-
-	return labelNames.commaSeparatedList()
-}
-
-func threadURL(t *github.PullRequestThread) (url string) {
-	comment := t.Comments[0]
-	if comment != nil {
-		url = comment.GetHTMLURL()
-	}
-	return
-}
-
-func convertUsers(users []*github.User) string {
-	var names links
-	for _, user := range users {
-		names = append(names, link{title: user.GetLogin(), href: user.GetHTMLURL()})
-	}
-	return names.commaSeparatedList()
-}
-
-func convertTeams(teams []*github.Team) string {
-	var names links
-	for _, team := range teams {
-		names = append(names, link{title: team.GetName(), href: team.GetHTMLURL()})
-	}
-	return names.commaSeparatedList()
-}
-
-var mdMaxSize = 4096
-var mdParser = parser.NewParser(
-	parser.WithBlockParsers(discordmd.BlockParsers()...),
-	parser.WithInlineParsers(discordmd.InlineParserWithLink()...),
-)
-
-func convertHyperlink(content, href string) string {
-	if href == "" {
-		return content
-	}
-	return fmt.Sprintf("[%s](%s)", content, href)
-}
-
-func convertMarkdown(githubMD, readMoreURL string) string {
-	bytes, buff := []byte(githubMD), strings.Builder{}
-	node := mdParser.Parse(text.NewReader(bytes))
-	if err := discordmd.DefaultRenderer.Render(&buff, bytes, node); err != nil {
-		return githubMD
-	}
-
-	s := buff.String()
-	if len(s) <= mdMaxSize {
-		return s
-	}
-
-	// If the message is too long, we need to truncate it.
-	truncateMsg := "... (truncated)"
-	if readMoreURL != "" {
-		truncateMsg = fmt.Sprintf("... (%s)", convertHyperlink("_read more_", readMoreURL))
-	}
-
-	return s[:strings.LastIndex(s[:mdMaxSize-len(truncateMsg)], " ")] + truncateMsg
-}
 
 // checkPR checks if an issue happens to be a pull request
 func checkPR(issue *github.Issue) bool {
