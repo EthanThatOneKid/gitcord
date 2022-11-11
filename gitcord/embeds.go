@@ -7,6 +7,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/ningen/v3/discordmd"
+	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
 	"github.com/google/go-github/v47/github"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/text"
@@ -67,7 +68,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 	}
 
 	return discord.Embed{
-		Title: fmt.Sprintf("Issue opened: #%d %s", issue.GetNumber(), issue.GetTitle()),
+		Title: discordclient.IssueMsgPrefix + fmt.Sprintf("%d %s", issue.GetNumber(), issue.GetTitle()),
 		URL:   issue.GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
 			URL:  issue.GetUser().GetHTMLURL(),
@@ -324,7 +325,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 	}
 
 	return discord.Embed{
-		Title: fmt.Sprintf("Pull request opened: #%d %s", pr.GetNumber(), pr.GetTitle()),
+		Title: discordclient.PRMsgPrefix + fmt.Sprintf("%d %s", pr.GetNumber(), pr.GetTitle()),
 		URL:   pr.GetHTMLURL(),
 		Author: &discord.EmbedAuthor{
 			URL:  ev.GetSender().GetHTMLURL(),

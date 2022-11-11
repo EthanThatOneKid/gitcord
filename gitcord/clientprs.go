@@ -53,7 +53,7 @@ func (c *PRsClient) EditInitialMsg(ev *github.PullRequestEvent) error {
 		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
 	}
 
-	msg := c.discord.FindMsgByIssue(t, pr.GetNumber())
+	msg := c.discord.FindMsgByPR(t, pr.GetNumber())
 	if msg == nil {
 		return fmt.Errorf("pull request %d does not have an initial message", pr.GetNumber())
 	}
