@@ -2,11 +2,13 @@ package markdown
 
 import (
 	"io"
+	"strings"
 
-	"github.com/diamondburned/ningen/v3/discordmd"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/renderer"
 	"go4.org/bytereplacer"
+
+	xast "github.com/yuin/goldmark/extension/ast"
 )
 
 var unescaper = bytereplacer.New("\\\\", "\\", "\\", "")
@@ -43,7 +45,10 @@ func (r *BasicRenderer) AddOptions(...renderer.Option) {}
 func (r *BasicRenderer) Render(w io.Writer, source []byte, n ast.Node) error {
 	// Wrap the current writer behind an unescaper.
 	w = UnescapeWriter(w)
+	return r.walk(w, source, n)
+}
 
+func (r *BasicRenderer) walk(w io.Writer, source []byte, n ast.Node) error {
 	return ast.Walk(n, func(node ast.Node, enter bool) (ast.WalkStatus, error) {
 		return r.walker(w, source, node, enter), nil
 	})
@@ -51,8 +56,14 @@ func (r *BasicRenderer) Render(w io.Writer, source []byte, n ast.Node) error {
 
 func (r *BasicRenderer) walker(w io.Writer, source []byte, n ast.Node, enter bool) ast.WalkStatus {
 	switch n := n.(type) {
-	case *ast.Document:
-		// noop
+	case *ast.Heading:
+		if enter {
+			io.WriteString(w, strings.Repeat("#", n.Level))
+			io.WriteString(w, " ")
+		} else {
+			io.WriteString(w, "\n\n")
+		}
+
 	case *ast.Blockquote:
 		if enter {
 			// A blockquote contains a paragraph each line. Because Discord.
@@ -73,8 +84,9 @@ func (r *BasicRenderer) walker(w io.Writer, source []byte, n ast.Node, enter boo
 
 	case *ast.Paragraph:
 		if !enter {
-			io.WriteString(w, "\n")
+			io.WriteString(w, "\n\n")
 		}
+
 	case *ast.FencedCodeBlock:
 		if enter {
 			// Write the body
@@ -85,40 +97,46 @@ func (r *BasicRenderer) walker(w io.Writer, source []byte, n ast.Node, enter boo
 		} else {
 			io.WriteString(w, "\n")
 		}
+
 	case *ast.Link:
 		if enter {
-			if len(n.Title) > 0 {
-				io.WriteString(w, ConvertHyperlink(string(n.Title), string(n.Destination)))
-			} else {
-				io.WriteString(w, string(n.Destination))
-			}
+			io.WriteString(w, "[")
+			r.walk(w, source, n.FirstChild())
+			io.WriteString(w, "]")
+
+			io.WriteString(w, "(")
+			io.WriteString(w, string(n.Destination))
+			io.WriteString(w, ")")
+
+			return ast.WalkSkipChildren
 		}
+
 	case *ast.AutoLink:
 		if enter {
 			io.WriteString(w, string(n.URL(source)))
 		}
-	case *discordmd.Inline:
-		// n.Attr should be used, but since we're in plaintext mode, there is no
-		// formatting.
-	case *discordmd.Emoji:
+
+	case *ast.ListItem:
 		if enter {
-			io.WriteString(w, ":"+string(n.Name)+":")
+			io.WriteString(w, "- ")
+		} else {
+			io.WriteString(w, "\n")
 		}
-	case *discordmd.Mention:
+
+	case *xast.TaskCheckBox:
 		if enter {
-			switch {
-			case n.Channel != nil:
-				io.WriteString(w, "#"+n.Channel.Name)
-			case n.GuildUser != nil:
-				io.WriteString(w, "@"+n.GuildUser.Username)
-			case n.GuildRole != nil:
-				io.WriteString(w, "@"+n.GuildRole.Name)
+			if n.IsChecked {
+				io.WriteString(w, "☑ ")
+			} else {
+				io.WriteString(w, "☐ ")
 			}
 		}
+
 	case *ast.String:
 		if enter {
 			w.Write(n.Value)
 		}
+
 	case *ast.Text:
 		if enter {
 			w.Write(n.Segment.Value(source))
@@ -130,5 +148,6 @@ func (r *BasicRenderer) walker(w io.Writer, source []byte, n ast.Node, enter boo
 			}
 		}
 	}
+
 	return ast.WalkContinue
 }

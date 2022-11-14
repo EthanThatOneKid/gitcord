@@ -29,6 +29,8 @@ func Convert(githubMD, readMoreURL string) string {
 	}
 
 	s := buf.String()
+	s = strings.TrimRight(s, "\n")
+
 	if len(s) <= mdMaxSize {
 		return s
 	}
