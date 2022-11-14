@@ -1,13 +1,16 @@
 package markdown
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/google/go-github/v47/github"
+	"github.com/jaytaylor/html2text"
+	"github.com/pkg/errors"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 type link struct {
@@ -17,29 +20,64 @@ type link struct {
 
 type links []link
 
-var mdMaxSize = 4096
-var defaultTruncateMd = "..."
-var mdParser = goldmark.New(goldmark.WithExtensions(extension.GFM)).Parser()
+var defaultMessageSize = 4096
+var defaultTruncateSuffix = "…"
 
-func Convert(githubMD, readMoreURL string) string {
-	bytes, buf := []byte(githubMD), strings.Builder{}
-	node := mdParser.Parse(text.NewReader(bytes))
-	if err := DefaultRenderer.Render(&buf, bytes, node); err != nil {
-		return githubMD
+var mdConverter = goldmark.New(
+	goldmark.WithExtensions(extension.GFM),
+	goldmark.WithRendererOptions(
+		html.WithHardWraps(),
+		html.WithXHTML(),
+	),
+)
+
+// ConvertDiscord converts the given GitHub Flavored Markdown to plain text,
+// truncating the result to the given maximum length.
+func ConvertDiscord(md, readMoreURL string) string {
+	var suffix = defaultTruncateSuffix
+	if readMoreURL != "" {
+		suffix += fmt.Sprintf(" %s", ConvertHyperlink("Read more", readMoreURL))
 	}
 
-	s := buf.String()
-	if len(s) <= mdMaxSize {
+	return ConvertTruncated(md, suffix, defaultMessageSize)
+}
+
+// ConvertTruncated converts the given GitHub Flavored Markdown to plain text,
+// truncating the result to the given maximum length.
+func ConvertTruncated(md, suffix string, maxLen int) string {
+	var text string
+	err := Convert(md, &text)
+	if err != nil {
+		errors.Wrap(err, "failed to convert GitHub Flavored Markdown to plain text")
+	}
+
+	return Truncate(text, suffix, maxLen)
+}
+
+// Truncate truncates the given string to the given maximum length.
+func Truncate(s, suffix string, maxLen int) string {
+	if len(s) <= maxLen {
 		return s
 	}
 
 	// If the message is too long, we need to truncate it.
-	suffix := defaultTruncateMd
-	if readMoreURL != "" {
-		suffix = fmt.Sprintf("... (%s)", ConvertHyperlink("_read more_", readMoreURL))
+	return s[:strings.LastIndex(s[:maxLen-len(suffix)], " ")] + suffix
+}
+
+// Convert converts GitHub Flavored Markdown to plain text.
+func Convert(md string, dst *string) error {
+	var buf bytes.Buffer
+	err := mdConverter.Convert([]byte(md), &buf)
+	if err != nil {
+		return err
 	}
 
-	return s[:strings.LastIndex(s[:mdMaxSize-len(suffix)], " ")] + suffix
+	*dst, err = html2text.FromString(buf.String(), html2text.Options{PrettyTables: true})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ConvertThreadURL(t *github.PullRequestThread) (url string) {

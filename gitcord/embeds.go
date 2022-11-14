@@ -56,7 +56,7 @@ func (c *Config) makeIssueEmbed(issue *github.Issue) discord.Embed {
 			Name: issue.GetUser().GetLogin(),
 			Icon: issue.GetUser().GetAvatarURL(),
 		},
-		Description: markdown.Convert(issue.GetBody(), issue.GetHTMLURL()),
+		Description: markdown.ConvertDiscord(issue.GetBody(), issue.GetHTMLURL()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
 		Fields:      fields,
 	}
@@ -233,7 +233,7 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 
 	return discord.Embed{
 		Title:       title,
-		Description: markdown.Convert(comment.GetBody(), comment.GetHTMLURL()),
+		Description: markdown.ConvertDiscord(comment.GetBody(), comment.GetHTMLURL()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(IssueCommented, true),
 		Fields:      fields,
@@ -250,7 +250,7 @@ func (c *Config) makeIssueCommentEmbed(ev *github.IssueCommentEvent) discord.Emb
 func (c *Config) makeIssueCommentDeletedEmbed(ev *github.IssueCommentEvent) discord.Embed {
 	return discord.Embed{
 		Title:       fmt.Sprintf("Deleted comment on issue #%d", ev.GetIssue().GetNumber()),
-		Description: markdown.Convert(ev.GetComment().GetBody(), ""),
+		Description: markdown.ConvertDiscord(ev.GetComment().GetBody(), ""),
 		Author: &discord.EmbedAuthor{
 			URL:  ev.GetSender().GetHTMLURL(),
 			Name: ev.GetSender().GetLogin(),
@@ -313,7 +313,7 @@ func (c *Config) makePREmbed(ev *github.PullRequestEvent) discord.Embed {
 			Name: pr.GetUser().GetLogin(),
 			Icon: pr.GetUser().GetAvatarURL(),
 		},
-		Description: markdown.Convert(pr.GetBody(), pr.GetHTMLURL()),
+		Description: markdown.ConvertDiscord(pr.GetBody(), pr.GetHTMLURL()),
 		Color:       c.ColorScheme.Color(IssueOpened, true),
 		Fields:      fields,
 	}
@@ -522,7 +522,7 @@ func (c *Config) makePRReviewEmbed(ev *github.PullRequestReviewEvent) discord.Em
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review submitted on pull request #%d", pr.GetNumber()),
-		Description: markdown.Convert(review.GetBody(), review.GetHTMLURL()),
+		Description: markdown.ConvertDiscord(review.GetBody(), review.GetHTMLURL()),
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(Reviewed, true),
 		Author: &discord.EmbedAuthor{
@@ -540,7 +540,7 @@ func (c *Config) makePRReviewDismissedEmbed(ev *github.PullRequestReviewEvent) d
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review dismissed on pull request #%d", pr.GetNumber()),
-		Description: markdown.Convert(review.GetBody(), review.GetHTMLURL()),
+		Description: markdown.ConvertDiscord(review.GetBody(), review.GetHTMLURL()),
 		URL:         review.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewDismissed, true),
 		Author: &discord.EmbedAuthor{
@@ -570,7 +570,7 @@ func (c *Config) makePRReviewCommentEmbed(ev *github.PullRequestReviewCommentEve
 
 	return discord.Embed{
 		Title:       fmt.Sprintf("Review comment on pull request #%d", pr.GetNumber()),
-		Description: markdown.Convert(comment.GetBody(), comment.GetHTMLURL()),
+		Description: markdown.ConvertDiscord(comment.GetBody(), comment.GetHTMLURL()),
 		URL:         comment.GetHTMLURL(),
 		Color:       c.ColorScheme.Color(ReviewCommented, true),
 		Fields:      fields,
@@ -609,7 +609,7 @@ func (c *Config) makePRReviewThreadEmbed(ev *github.PullRequestReviewThreadEvent
 	for _, comment := range t.Comments {
 		fields = append(fields, discord.EmbedField{
 			Name:   fmt.Sprintf("Review comment %d", comment.GetID()),
-			Value:  markdown.Convert(comment.GetBody(), comment.GetHTMLURL()),
+			Value:  markdown.ConvertDiscord(comment.GetBody(), comment.GetHTMLURL()),
 			Inline: false,
 		})
 	}

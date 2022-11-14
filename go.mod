@@ -3,15 +3,17 @@ module github.com/ethanthatonekid/gitcord
 go 1.19
 
 require (
-	github.com/diamondburned/ningen/v3 v3.0.0-20221109004709-fed56ccbcd19
 	github.com/google/go-github/v47 v47.1.0
+	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
 	github.com/yuin/goldmark v1.3.2
-	go4.org v0.0.0-20201209231011-d4a079459e60
 )
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 )
 
