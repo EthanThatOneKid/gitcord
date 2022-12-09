@@ -101,6 +101,8 @@ func (c *Client) DoEventPayload(name, plStr string) error {
 
 // DoEvent handles a GitHub event.
 func (c *Client) DoEvent(ev *github.Event) error {
+	println("Hello, world!")
+
 	data, err := ev.ParsePayload()
 	if err != nil {
 		return err
