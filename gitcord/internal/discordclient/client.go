@@ -99,11 +99,13 @@ func (c *Client) threads() ([]discord.Channel, error) {
 	return threads, nil
 }
 
-func (c *Client) FindThreadByNumber(id int) (*discord.Channel, error) {
-	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
-	defer cancel()
+const (
+	totalRetries  = 10
+	retryWaitTime = 10 * time.Second
+)
 
-	for {
+func (c *Client) FindThreadByNumber(id int) (*discord.Channel, error) {
+	for i := 0; i < totalRetries; i++ {
 		chs, err := c.threads()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get threads: %w", err)
@@ -114,16 +116,18 @@ func (c *Client) FindThreadByNumber(id int) (*discord.Channel, error) {
 			return ch, nil
 		}
 
-		ticker := time.NewTicker(1 * time.Second)
+		ticker := time.NewTicker(retryWaitTime)
 		defer ticker.Stop()
 
 		select {
 		case <-ticker.C:
 			continue
-		case <-ctx.Done():
-			return nil, ctx.Err()
+		case <-c.Context().Done():
+			return nil, c.Context().Err()
 		}
 	}
+
+	return nil, fmt.Errorf("thread #%d not found", id)
 }
 
 func findChannelByNumber(channels []discord.Channel, targetID int) *discord.Channel {
