@@ -6,6 +6,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -82,7 +83,7 @@ func (c *Client) threads() ([]discord.Channel, error) {
 	var prevArchivedThreadTime discord.Timestamp
 	hasMore := true
 	for hasMore {
-		archive, err := c.Client.PublicArchivedThreadsBefore(c.config.ChannelID, prevArchivedThreadTime, 100)
+		archive, err := c.Client.PublicArchivedThreads(c.config.ChannelID, prevArchivedThreadTime, 100)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to load archived threads")
 		}
@@ -98,14 +99,31 @@ func (c *Client) threads() ([]discord.Channel, error) {
 	return threads, nil
 }
 
-func (c *Client) FindThreadByNumber(id int) *discord.Channel {
-	chs, err := c.threads()
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
+func (c *Client) FindThreadByNumber(id int) (*discord.Channel, error) {
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
 
-	return findChannelByNumber(chs, id)
+	for {
+		chs, err := c.threads()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get threads: %w", err)
+		}
+
+		ch := findChannelByNumber(chs, id)
+		if ch != nil {
+			return ch, nil
+		}
+
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		select {
+		case <-ticker.C:
+			continue
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
 }
 
 func findChannelByNumber(channels []discord.Channel, targetID int) *discord.Channel {

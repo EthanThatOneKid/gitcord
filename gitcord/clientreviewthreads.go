@@ -12,12 +12,12 @@ type ReviewThreadsClient client
 func (c ReviewThreadsClient) EmbedReviewThreadMsg(ev *github.PullRequestReviewThreadEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
-	_, err := c.discord.SendEmbeds(ch.ID, c.config.makePRReviewThreadEmbed(ev))
+	_, err = c.discord.SendEmbeds(ch.ID, c.config.makePRReviewThreadEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}
@@ -28,9 +28,9 @@ func (c ReviewThreadsClient) EmbedReviewThreadMsg(ev *github.PullRequestReviewTh
 func (c ReviewThreadsClient) EditReviewThreadMsg(ev *github.PullRequestReviewThreadEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
 	msg := c.discord.FindMsgByComment(ch, ev.GetThread().GetID())
@@ -38,7 +38,7 @@ func (c ReviewThreadsClient) EditReviewThreadMsg(ev *github.PullRequestReviewThr
 		return fmt.Errorf("failed to find message")
 	}
 
-	_, err := c.discord.EditEmbeds(ch.ID, msg.ID, c.config.makePRReviewThreadEmbed(ev))
+	_, err = c.discord.EditEmbeds(ch.ID, msg.ID, c.config.makePRReviewThreadEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to edit message")
 	}
@@ -49,12 +49,12 @@ func (c ReviewThreadsClient) EditReviewThreadMsg(ev *github.PullRequestReviewThr
 func (c ReviewThreadsClient) EmbedReviewThreadResolvedMsg(ev *github.PullRequestReviewThreadEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
-	_, err := c.discord.SendEmbeds(ch.ID, c.config.makePRReviewThreadResolvedEmbed(ev))
+	_, err = c.discord.SendEmbeds(ch.ID, c.config.makePRReviewThreadResolvedEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}
@@ -65,12 +65,12 @@ func (c ReviewThreadsClient) EmbedReviewThreadResolvedMsg(ev *github.PullRequest
 func (c ReviewThreadsClient) EmbedReviewThreadUnresolvedMsg(ev *github.PullRequestReviewThreadEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
-	_, err := c.discord.SendEmbeds(ch.ID, c.config.makePRReviewThreadUnresolvedEmbed(ev))
+	_, err = c.discord.SendEmbeds(ch.ID, c.config.makePRReviewThreadUnresolvedEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}

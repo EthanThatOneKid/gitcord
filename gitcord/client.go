@@ -108,20 +108,25 @@ func (c *Client) DoEvent(ev *github.Event) error {
 
 	switch *ev.Type {
 	case "IssuesEvent":
-		return c.handleIssuesEvent(data.(*github.IssuesEvent))
+		err = c.handleIssuesEvent(data.(*github.IssuesEvent))
 	case "IssueCommentEvent":
-		return c.handleIssueCommentEvent(data.(*github.IssueCommentEvent))
+		err = c.handleIssueCommentEvent(data.(*github.IssueCommentEvent))
 	case "PullRequestEvent":
-		return c.handlePREvent(data.(*github.PullRequestEvent))
+		err = c.handlePREvent(data.(*github.PullRequestEvent))
 	case "PullRequestReviewEvent":
-		return c.handlePullRequestReviewEvent(data.(*github.PullRequestReviewEvent))
+		err = c.handlePullRequestReviewEvent(data.(*github.PullRequestReviewEvent))
 	case "PullRequestReviewCommentEvent":
-		return c.handlePullRequestReviewCommentEvent(data.(*github.PullRequestReviewCommentEvent))
+		err = c.handlePullRequestReviewCommentEvent(data.(*github.PullRequestReviewCommentEvent))
 	case "PullRequestReviewThreadEvent":
-		return c.handlePullRequestReviewThreadEvent(data.(*github.PullRequestReviewThreadEvent))
+		err = c.handlePullRequestReviewThreadEvent(data.(*github.PullRequestReviewThreadEvent))
 	default:
 		return fmt.Errorf("unknown event type %q", *ev.Type)
 	}
+
+	if err != nil {
+		return fmt.Errorf("failed to handle event %q: %w", *ev.Type, err)
+	}
+	return nil
 }
 
 // handleIssuesEvent handles an IssuesEvent
@@ -164,7 +169,7 @@ func (c *Client) handleIssuesEvent(ev *github.IssuesEvent) error {
 		}
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to embed %q message: %w", *ev.Action, err)
 		}
 
 		return c.Issues.EditInitialMsg(ev)
@@ -220,7 +225,7 @@ func (c *Client) handlePREvent(ev *github.PullRequestEvent) error {
 		}
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to embed %q message: %w", *ev.Action, err)
 		}
 
 		return c.PRs.EditInitialMsg(ev)

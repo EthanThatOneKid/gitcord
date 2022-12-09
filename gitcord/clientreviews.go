@@ -12,12 +12,12 @@ type ReviewsClient client
 func (c *ReviewsClient) EmbedReviewMsg(ev *github.PullRequestReviewEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
-	_, err := c.discord.SendEmbeds(ch.ID, c.config.makePRReviewEmbed(ev))
+	_, err = c.discord.SendEmbeds(ch.ID, c.config.makePRReviewEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}
@@ -28,12 +28,12 @@ func (c *ReviewsClient) EmbedReviewMsg(ev *github.PullRequestReviewEvent) error 
 func (c ReviewsClient) EmbedReviewDismissedMsg(ev *github.PullRequestReviewEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
-	_, err := c.discord.SendEmbeds(ch.ID, c.config.makePRReviewDismissedEmbed(ev))
+	_, err = c.discord.SendEmbeds(ch.ID, c.config.makePRReviewDismissedEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to send message")
 	}
@@ -44,9 +44,9 @@ func (c ReviewsClient) EmbedReviewDismissedMsg(ev *github.PullRequestReviewEvent
 func (c ReviewsClient) EditReviewMsg(ev *github.PullRequestReviewEvent) error {
 	pr := ev.GetPullRequest()
 
-	ch := c.discord.FindThreadByNumber(pr.GetNumber())
-	if ch == nil {
-		return fmt.Errorf("pull request %d does not have a thread", pr.GetNumber())
+	ch, err := c.discord.FindThreadByNumber(pr.GetNumber())
+	if err != nil {
+		return &PRThreadError{PR: pr.GetNumber(), Err: err}
 	}
 
 	msg := c.discord.FindMsgByComment(ch, ev.GetReview().GetID())
@@ -54,7 +54,7 @@ func (c ReviewsClient) EditReviewMsg(ev *github.PullRequestReviewEvent) error {
 		return fmt.Errorf("failed to find message")
 	}
 
-	_, err := c.discord.EditEmbeds(ch.ID, msg.ID, c.config.makePRReviewEmbed(ev))
+	_, err = c.discord.EditEmbeds(ch.ID, msg.ID, c.config.makePRReviewEmbed(ev))
 	if err != nil {
 		return errors.Wrap(err, "failed to edit message")
 	}
