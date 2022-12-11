@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209011611-d4bfd69cf66a
+	github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209034857-b3b247848181
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/schema v1.2.0 // indirect

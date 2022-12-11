@@ -29,6 +29,14 @@ github.com/diamondburned/arikawa/v3 v3.1.1-0.20221103093025-87c479a2dcd4 h1:zINI
 github.com/diamondburned/arikawa/v3 v3.1.1-0.20221103093025-87c479a2dcd4/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
 github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209011611-d4bfd69cf66a h1:j0fSyr58Xpqf261qHPEtjYr9aDjKwtWdntbNySLPpw4=
 github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209011611-d4bfd69cf66a/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209031728-3bb8c2b0195a h1:lw/U38Ly0QWFvUTZMlLQTAmk7LHP9bLpWI+VJ89O5pY=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209031728-3bb8c2b0195a/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209033859-bf756210689d h1:h+LoZB/brIYZ942GY173YY2os31OtxOk0YvKhTpDitQ=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209033859-bf756210689d/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209034222-ea4beab6bded h1:hsSw8sxjW76FSVDgC0kqNazU9lL1INWo/u/PTydtbPQ=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209034222-ea4beab6bded/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209034857-b3b247848181 h1:hdw07F3vp1CXhZRLJur4lsLPKnR3OK2P8G/WXbugrY0=
+github.com/diamondburned/arikawa/v3 v3.1.1-0.20221209034857-b3b247848181/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
 github.com/diamondburned/ningen/v3 v3.0.0-20221109004709-fed56ccbcd19 h1:xW2wAaBI8M8grtac8d2blcukQGZdtorf+KYLGMBhvfY=
 github.com/diamondburned/ningen/v3 v3.0.0-20221109004709-fed56ccbcd19/go.mod h1:wMe9WZQiFgkH5Slr5xK8XBBqMJxWTfRDZU82wPney4Y=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
