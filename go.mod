@@ -3,7 +3,6 @@ module github.com/ethanthatonekid/gitcord
 go 1.19
 
 require (
-	github.com/diamondburned/ningen/v3 v3.0.0-20221109004709-fed56ccbcd19
 	github.com/google/go-github/v47 v47.1.0
 	github.com/yuin/goldmark v1.3.2
 	go4.org v0.0.0-20201209231011-d4a079459e60

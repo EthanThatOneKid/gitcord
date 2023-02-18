@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/discordclient"
 	"github.com/ethanthatonekid/gitcord/gitcord/internal/githubclient"
@@ -149,7 +150,10 @@ func (c *Client) handleIssuesEvent(ev *github.IssuesEvent) error {
 		case "closed":
 			err = c.Issues.EmbedClosedMsg(ev)
 		case "reopened":
-			err = c.Issues.EmbedReopenedMsg(ev)
+			err = c.Issues.OpenAndEmbedInitialMsg(ev)
+			if !strings.Contains(err.Error(), "failed to open thread") {
+				err = c.Issues.EmbedReopenedMsg(ev)
+			}
 		case "assigned":
 			err = c.Issues.EmbedAssignedMsg(ev)
 		case "unassigned":
@@ -205,7 +209,10 @@ func (c *Client) handlePREvent(ev *github.PullRequestEvent) error {
 		case "closed":
 			err = c.PRs.EmbedClosedMsg(ev)
 		case "reopened":
-			err = c.PRs.EmbedReopenedMsg(ev)
+			err = c.PRs.OpenAndEmbedInitialMsg(ev)
+			if !strings.Contains(err.Error(), "failed to open thread") {
+				err = c.PRs.EmbedReopenedMsg(ev)
+			}
 		case "assigned":
 			err = c.PRs.EmbedAssignedMsg(ev)
 		case "unassigned":
